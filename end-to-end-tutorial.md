@@ -51,7 +51,7 @@ Before running any of the other `minty` commands, you'll need to deploy an insta
 smart contract:
 
 ```shell
-minty deploy
+minty deploy --contract "OpenMinty" --name "MintIt" --description "It's Minty" --image "~/pictures/profile.jpg"
 
 > deploying contract for token Julep (JLP) to network "localhost"...
 > deployed contract for token Julep (JLP) to 0x5FbDB2315678afecb367f032d93F642f64180aa3 (network: localhost)
