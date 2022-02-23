@@ -77,7 +77,10 @@ async function main() {
       "Path to write deployment info to",
       config.deploymentConfigFile || "minty-deployment.json"
     )
-    .option("-c, --contract <contract>", "OpenMinty | PreMinty")
+    .option(
+      "-c, --contract <contract>",
+      "Contract template to deploy. Must be either OpenMinty or PreMinty"
+    )
     .option("-n, --name <name>", "The name of the token contract")
     .option("-d, --description <desc>", "A description of the token contract")
     .option(
@@ -223,6 +226,10 @@ async function deploy(options) {
     !options.metadata
       ? !options.file
         ? {
+            contract: {
+              message: "Select a contract template for your new NFT contract: ",
+            },
+
             name: {
               message: "Enter a name for your new NFT contract: ",
             },
