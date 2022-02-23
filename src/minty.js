@@ -177,10 +177,14 @@ class Minty {
   async makeNFTMetadata(assetURI, options) {
     let md;
     let attributes;
-    const { metadata, name, description, attrs, exurl } = options;
+    const { metadata, file, name, description, attrs, exurl } = options;
     assetURI = ensureIpfsUriPrefix(assetURI);
     if (!metadata) {
-      attributes = attrs ? require(attrs).attributes : [];
+      if (!file) {
+        attributes = attrs ? require(attrs).attributes : [];
+      } else {
+        md = require(file);
+      }
     } else {
       md = JSON.parse(metadata);
     }
