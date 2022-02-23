@@ -79,9 +79,39 @@ async function main() {
     )
     .option("-n, --name <name>", "The name of the token contract", "Julep")
     .option(
+      "-d, --description <desc>",
+      "A description of the token contract",
+      "Julep"
+    )
+    .option(
       "-s, --symbol <symbol>",
       "A short symbol for the tokens in this contract",
       "JLP"
+    )
+    .option(
+      "-e, --exUrl <exUrl>",
+      "The external url of the collection website",
+      "Julep"
+    )
+    .option(
+      "-s, --sellerFee <fee>",
+      "The seller fee, in basis points, to be charged to opensea seller's and credited to the listed fee recipient",
+      "Julep"
+    )
+    .option(
+      "-r, --recipient <recipient>",
+      "The fee recipient where seller fees will be sent following sales on opensea.",
+      "Julep"
+    )
+    .option(
+      "-m, --metadata <metadata>",
+      "The token contract's metadata in JSON format",
+      "Julep"
+    )
+    .option(
+      "-f, --file <file>",
+      "Path to the JSON file containing the token contract's metadata.",
+      "Julep"
     )
     .action(deploy);
 
@@ -118,25 +148,28 @@ async function createNFT(imagePath, options) {
             exUrl: {
               message: "Enter an external url for your new NFT: ",
             },
+
             bg: {
               message:
-                "Enter a hexidecimal color code for Opensea NFT background.",
+                "Enter a hexidecimal color code for Opensea NFT background: ",
             },
+
             animation: {
-              message: "Enter an animation URL for your new NFT.",
+              message: "Enter an animation URL for your new NFT: ",
             },
+
             video: {
-              message: "Enter a video URL for your new NFT.",
+              message: "Enter a video URL for your new NFT: ",
             },
           }
         : {
             file: {
-              message: "Enter a path for your NFT metadata JSON file.",
+              message: "Enter a path for your NFT metadata JSON file: ",
             },
           }
       : {
           metadata: {
-            message: "Provide metadata JSON content.",
+            message: "Provide metadata JSON content: ",
           },
         }
   );
@@ -197,6 +230,65 @@ async function pinNFTData(tokenId) {
 }
 
 async function deploy(options) {
+  //   const {
+  //     output,
+  //     name,
+  //     description,
+  //     image,
+  //     symbol,
+  //     exUrl,
+  //     sellerFee,
+  //     recipient,
+  //     metadata,
+  //     file
+  //   } = options;
+  // prompt for missing details if not provided as cli args
+  const answers = await promptForMissing(
+    options,
+    !options.metadata
+      ? !options.file
+        ? {
+            name: {
+              message: "Enter a name for your new NFT contract: ",
+            },
+
+            description: {
+              message: "Enter a description for your new NFT contract: ",
+            },
+
+            symbol: {
+              message: "Enter a token symbol for your new NFT contract: ",
+            },
+
+            image: {
+              message: "Enter an image file path for your new NFT contract: ",
+            },
+
+            exUrl: {
+              message: "Enter an external url for your new NFT contract: ",
+            },
+
+            sellerFee: {
+              message:
+                "Enter an Opensea seller fee, in basis points, for your new NFT contract: ",
+            },
+
+            recipient: {
+              message:
+                "Enter a fee recipient wallet address for your new NFT contract: ",
+            },
+          }
+        : {
+            file: {
+              message: "Enter a path for your NFT metadata JSON file: ",
+            },
+          }
+      : {
+          metadata: {
+            message: "Provide metadata JSON content: ",
+          },
+        }
+  );
   const filename = options.output;
   const info = await deployContract(options.name, options.symbol);
   await saveDeploymentInfo(info, filename);

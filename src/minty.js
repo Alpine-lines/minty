@@ -184,8 +184,6 @@ class Minty {
    * @returns {object} - NFT metadata object
    */
   async makeNFTMetadata(assetURI, options) {
-    let md;
-    let attributes;
     const {
       metadata,
       file,
@@ -197,31 +195,36 @@ class Minty {
       animation,
       video,
     } = options;
+
     assetURI = ensureIpfsUriPrefix(assetURI);
+
+    let md;
+
     if (!metadata) {
       if (!file) {
-        attributes = attrs ? require(attrs).attributes : [];
-      } else {
-        md = require(file);
-      }
-    } else {
-      md = JSON.parse(metadata);
-    }
-    return md
-      ? {
-          ...md,
-          image: assetURI,
-        }
-      : {
+        md = {
           name,
           description,
-          attributes: attributes,
+          attributes: attrs ? require(attrs).attributes : [],
           image: assetURI,
           external_url: exUrl,
           background_color: bg,
           animation_url: animation,
           video_url: video,
         };
+      } else {
+        md = {
+          ...require(file),
+          image: assetURI,
+        };
+      }
+    } else {
+      md = {
+        ...JSON.parse(metadata),
+        image: assetURI,
+      };
+    }
+    return md;
   }
 
   //////////////////////////////////////////////
@@ -307,9 +310,6 @@ class Minty {
    * @returns {Promise<string>} - the ID of the new token
    */
   async mintToken(ownerAddress, metadataURI) {
-    // the smart contract adds an ipfs:// prefix to all URIs, so make sure it doesn't get added twice
-    metadataURI = stripIpfsUriPrefix(metadataURI);
-
     // Call the mintToken method to issue a new token to the given address
     // This returns a transaction object, but the transaction hasn't been confirmed
     // yet, so it doesn't have our token id.
