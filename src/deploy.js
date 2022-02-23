@@ -134,7 +134,11 @@ function deploymentInfo(hardhat, minty) {
   };
 }
 
-async function saveDeploymentInfo(info, filename = undefined) {
+async function saveDeploymentInfo(
+  info,
+  filename = undefined,
+  metadataURI = undefined
+) {
   if (!filename) {
     filename = config.deploymentConfigFile || "minty-deployment.json";
   }
@@ -147,8 +151,13 @@ async function saveDeploymentInfo(info, filename = undefined) {
   }
 
   console.log(`Writing deployment info to ${filename}`);
+
+  if (metadata) {
+    info.contract.metadataURI = metadataURI;
+  }
   const content = JSON.stringify(info, null, 2);
   await fs.writeFile(filename, content, { encoding: "utf-8" });
+
   return true;
 }
 
@@ -186,6 +195,7 @@ function validateDeploymentInfo(deployInfo) {
   required("name");
   required("address");
   required("abi");
+  required("metadataURI");
 }
 
 async function fileExists(path) {

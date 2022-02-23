@@ -77,41 +77,28 @@ async function main() {
       "Path to write deployment info to",
       config.deploymentConfigFile || "minty-deployment.json"
     )
-    .option("-n, --name <name>", "The name of the token contract", "Julep")
-    .option(
-      "-d, --description <desc>",
-      "A description of the token contract",
-      "Julep"
-    )
+    .option("-n, --name <name>", "The name of the token contract")
+    .option("-d, --description <desc>", "A description of the token contract")
     .option(
       "-s, --symbol <symbol>",
-      "A short symbol for the tokens in this contract",
-      "JLP"
+      "A short symbol for the tokens in this contract"
     )
-    .option(
-      "-e, --exUrl <exUrl>",
-      "The external url of the collection website",
-      "Julep"
-    )
+    .option("-e, --exUrl <exUrl>", "The external url of the collection website")
     .option(
       "-s, --sellerFee <fee>",
-      "The seller fee, in basis points, to be charged to opensea seller's and credited to the listed fee recipient",
-      "Julep"
+      "The seller fee, in basis points, to be charged to opensea sellers and credited to the listed fee recipient"
     )
     .option(
       "-r, --recipient <recipient>",
-      "The fee recipient where seller fees will be sent following sales on opensea.",
-      "Julep"
+      "The fee recipient where seller fees will be sent following sales on opensea."
     )
     .option(
       "-m, --metadata <metadata>",
-      "The token contract's metadata in JSON format",
-      "Julep"
+      "The token contracts metadata in JSON format"
     )
     .option(
       "-f, --file <file>",
-      "Path to the JSON file containing the token contract's metadata.",
-      "Julep"
+      "Path to the JSON file containing the token contracts metadata."
     )
     .action(deploy);
 
@@ -230,19 +217,6 @@ async function pinNFTData(tokenId) {
 }
 
 async function deploy(options) {
-  //   const {
-  //     output,
-  //     name,
-  //     description,
-  //     image,
-  //     symbol,
-  //     exUrl,
-  //     sellerFee,
-  //     recipient,
-  //     metadata,
-  //     file
-  //   } = options;
-  // prompt for missing details if not provided as cli args
   const answers = await promptForMissing(
     options,
     !options.metadata
@@ -290,7 +264,7 @@ async function deploy(options) {
         }
   );
   const filename = options.output;
-  const info = await deployContract(options.name, options.symbol);
+  const info = await deployContract(answers.name, answers.symbol);
   await saveDeploymentInfo(info, filename);
 }
 
