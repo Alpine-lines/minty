@@ -8,7 +8,7 @@ import "./Open721.sol";
  * @title Creature
  * Creature - a contract for my non-fungible creatures.
  */
-contract Creature is Open721 {
+contract OpenMinty is Open721 {
     constructor(
         string memory _name, 
         string memory _symbol, 

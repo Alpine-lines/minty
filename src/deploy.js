@@ -1,11 +1,17 @@
 const fs = require("fs/promises");
+const path = require("path");
 const { F_OK } = require("fs");
-
+const CID = require("cids");
+const ipfsClient = require("ipfs-http-client");
 const inquirer = require("inquirer");
 const { BigNumber } = require("ethers");
-const config = require("getconfig");
 
 // const CONTRACT_NAME = "Minty";
+
+// The getconfig package loads configuration from files located in the the `config` directory.
+// See https://www.npmjs.com/package/getconfig for info on how to override the default config for
+// different environments (e.g. testnet, mainnet, staging, production, etc).
+const config = require("getconfig");
 
 // ipfs.add parameters for more deterministic CIDs
 const ipfsAddOptions = {
@@ -13,51 +19,65 @@ const ipfsAddOptions = {
   hashAlg: "sha2-256",
 };
 
+const ipfs = ipfsClient(config.ipfsApiUrl);
+
 async function deployContract(options) {
   const { name, image, symbol, contract } = options;
+  console.log(name, image, symbol, contract);
 
   const hardhat = require("hardhat");
   const network = hardhat.network.name;
 
-  // add the asset to IPFS
-  const imagePath = image || "asset.bin";
-  const basename = path.basename(imagePath);
+  let imageURI;
 
-  // When you add an object to IPFS with a directory prefix in its path,
-  // IPFS will create a directory structure for you. This is nice, because
-  // it gives us URIs with descriptive filenames in them e.g.
-  // 'ipfs://QmaNZ2FCgvBPqnxtkbToVVbK2Nes6xk5K4Ns6BsmkPucAM/cat-pic.png' instead of
-  // 'ipfs://QmaNZ2FCgvBPqnxtkbToVVbK2Nes6xk5K4Ns6BsmkPucAM'
-  const ipfsPath = "/contract/" + basename;
-  const { cid: imageCid } = await this.ipfs.add(
-    { path: ipfsPath, content },
-    ipfsAddOptions
-  );
-  const imageURI = ensureIpfsUriPrefix(imageCid) + "/" + basename;
+  if (image) {
+    // fetch image content
+    const content = await fs.readFile(image);
+
+    // add the asset to IPFS
+    const imagePath = image || "asset.bin";
+    const basename = path.basename(imagePath);
+
+    // When you add an object to IPFS with a directory prefix in its path,
+    // IPFS will create a directory structure for you. This is nice, because
+    // it gives us URIs with descriptive filenames in them e.g.
+    // 'ipfs://QmaNZ2FCgvBPqnxtkbToVVbK2Nes6xk5K4Ns6BsmkPucAM/cat-pic.png' instead of
+    // 'ipfs://QmaNZ2FCgvBPqnxtkbToVVbK2Nes6xk5K4Ns6BsmkPucAM'
+    const ipfsPath = "/contract/" + basename;
+    // const ipfsPath = basename;
+    const { cid: imageCid } = await ipfs.add(
+      { path: ipfsPath, content },
+      ipfsAddOptions
+    );
+    imageURI = ensureIpfsUriPrefix(imageCid) + "/" + basename;
+  }
+  const imageGatewayURL = makeGatewayURL(imageURI);
 
   // make the NFT metadata JSON
   const md = await makeContractMetadata(imageURI, options);
 
   // add the metadata to IPFS
-  const { cid: metadataCid } = await this.ipfs.add(
+  const { cid: metadataCid } = await ipfs.add(
     { path: "/contract/metadata.json", content: JSON.stringify(md) },
     ipfsAddOptions
   );
-  const metadataURI =
-    ensureIpfsUriPrefix(metadataCid) + "contract/metadata.json";
+  const metadataURI = ensureIpfsUriPrefix(metadataCid) + "/metadata.json";
+  const metadataGatewayURL = makeGatewayURL(metadataURI);
 
   // OpenSea proxy registry addresses for rinkeby and mainnet.
   let proxyRegistryAddress = "";
+  let mockProxy;
   if (network == "localhost") {
-    const signers = hardhat.ethers.getSigners();
+    const signers = await hardhat.ethers.getSigners();
 
     const MockProxy = await hardhat.ethers.getContractFactory(
       "MockProxyRegistry"
     );
-    const mockProxy = await MockProxy.deploy();
+    mockProxy = await MockProxy.deploy();
 
     await mockProxy.deployed();
-    await mockProxy.setProxy(signers[0].address, signers[10].address);
+    // console.log(signers, signers[0]);
+    await mockProxy.setProxy(signers[0].address, signers[9].address);
   } else if (network === "rinkeby") {
     proxyRegistryAddress = "0xf57b2c51ded3a29e6891aba85459d600256cf317";
   } else {
@@ -65,21 +85,25 @@ async function deployContract(options) {
   }
 
   console.log(
-    `deploying contract for token ${name} (${symbol}) to network "${network}". You can now view contract metadata at ${metadataURI}..`
+    `deploying contract for token ${name} (${symbol}) to network "${network}". You can now view contract metadata at ${metadataGatewayURL} ...`
   );
   const Minty = await hardhat.ethers.getContractFactory(contract);
-  const minty = await Minty.deploy(name, symbol, metadataURI);
+  const minty = await Minty.deploy(
+    name,
+    symbol,
+    metadataURI,
+    mockProxy.address
+  );
 
   await minty.deployed();
   console.log(
     `deployed contract for token ${name} (${symbol}) to ${minty.address} (network: ${network}, metadata: ${metadataURI})`
   );
 
-  return deploymentInfo(hardhat, minty, contract);
+  return deploymentInfo(hardhat, minty, contract, metadataURI);
 }
 
-function makeContractMetadata(assetURI, options) {
-  console.log(options);
+function makeContractMetadata(assetURI = "", options) {
   const {
     name,
     description,
@@ -122,14 +146,16 @@ function makeContractMetadata(assetURI, options) {
   return md;
 }
 
-function deploymentInfo(hardhat, minty, contract) {
+function deploymentInfo(hardhat, minty, contract, metadataURI) {
   return {
     network: hardhat.network.name,
+    template: contract,
     contract: {
       name: contract,
       address: minty.address,
       signerAddress: minty.signer.address,
       abi: minty.interface.format(),
+      metadataURI,
     },
   };
 }
@@ -152,7 +178,7 @@ async function saveDeploymentInfo(
 
   console.log(`Writing deployment info to ${filename}`);
 
-  if (metadata) {
+  if (metadataURI) {
     info.contract.metadataURI = metadataURI;
   }
   const content = JSON.stringify(info, null, 2);
@@ -192,7 +218,6 @@ function validateDeploymentInfo(deployInfo) {
     }
   };
 
-  required("contract");
   required("name");
   required("address");
   required("abi");
@@ -218,6 +243,42 @@ async function confirmOverwrite(filename) {
     },
   ]);
   return answers.overwrite;
+}
+
+//////////////////////////////////////////////
+// -------- URI helpers
+//////////////////////////////////////////////
+
+/**
+ * @param {string} cidOrURI either a CID string, or a URI string of the form `ipfs://${cid}`
+ * @returns the input string with the `ipfs://` prefix stripped off
+ */
+function stripIpfsUriPrefix(cidOrURI) {
+  if (cidOrURI.startsWith("ipfs://")) {
+    return cidOrURI.slice("ipfs://".length);
+  }
+  return cidOrURI;
+}
+
+function ensureIpfsUriPrefix(cidOrURI) {
+  let uri = cidOrURI.toString();
+  if (!uri.startsWith("ipfs://")) {
+    uri = "ipfs://" + cidOrURI;
+  }
+  // Avoid the Nyan Cat bug (https://github.com/ipfs/go-ipfs/pull/7930)
+  if (uri.startsWith("ipfs://ipfs/")) {
+    uri = uri.replace("ipfs://ipfs/", "ipfs://");
+  }
+  return uri;
+}
+
+/**
+ * Return an HTTP gateway URL for the given IPFS object.
+ * @param {string} ipfsURI - an ipfs:// uri or CID string
+ * @returns - an HTTP url to view the IPFS object on the configured gateway.
+ */
+function makeGatewayURL(ipfsURI) {
+  return config.ipfsGatewayUrl + "/" + stripIpfsUriPrefix(ipfsURI);
 }
 
 module.exports = {

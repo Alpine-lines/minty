@@ -20,7 +20,7 @@ contract ProxyRegistry {
     mapping(address => OwnableDelegateProxy) public proxies;
 }
 
-contract Open721 is ERC721, ERC721URIStorage, ContextMixin, NativeMetaTransaction, Ownable {
+contract Pre721 is ERC721, ERC721URIStorage, ContextMixin, NativeMetaTransaction, Ownable {
     using SafeMath for uint256;
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
@@ -57,7 +57,7 @@ contract Open721 is ERC721, ERC721URIStorage, ContextMixin, NativeMetaTransactio
         return CONTRACT_URI;
     }
 
-    function mintToken(address owner, string memory metadataURI)
+    function mintToken(string memory metadataURI)
     public
     onlyOwner 
     returns (uint256)
@@ -65,7 +65,7 @@ contract Open721 is ERC721, ERC721URIStorage, ContextMixin, NativeMetaTransactio
         _tokenIds.increment();
         uint256 id = _tokenIds.current();
 
-        _safeMint(owner, id);
+        _safeMint(_msgSender(), id);
 
         _setTokenURI(id, metadataURI);
         emit PermanentURI(metadataURI, id); // Remove if tokenURI changes overtime with token state.
@@ -74,7 +74,7 @@ contract Open721 is ERC721, ERC721URIStorage, ContextMixin, NativeMetaTransactio
     }
 
     function _burn(uint _id) internal pure override(ERC721, ERC721URIStorage) {
-        require(_id == false, "NO BURNING"); // Always reverts
+        require(_id == 99999999999999999999, "NO BURNING"); // Always reverts
     }
 
     /**

@@ -59,8 +59,6 @@ contract Open721 is ERC721, ERC721URIStorage, ContextMixin, NativeMetaTransactio
 
     function mintToken(string memory metadataURI)
     public
-    // onlyOwner // Uncomment for access controlled (contract owner only) minting. Add address owner, to parameter list
-    // to support deliverying token to address other than _msgSender(), if so, and replace _msgSender() with owner in _safeMint(). 
     returns (uint256)
     {
         _tokenIds.increment();
@@ -75,7 +73,7 @@ contract Open721 is ERC721, ERC721URIStorage, ContextMixin, NativeMetaTransactio
     }
 
     function _burn(uint _id) internal pure override(ERC721, ERC721URIStorage) {
-        require(_id == false, "NO BURNING"); // Always reverts
+        require(_id == 99999999999999999999, "NO BURNING"); // Always reverts
     }
 
     /**

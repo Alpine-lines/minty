@@ -83,6 +83,7 @@ async function main() {
     )
     .option("-n, --name <name>", "The name of the token contract")
     .option("-d, --description <desc>", "A description of the token contract")
+    .option("-i, --image <image>", "An image file path for the token contract")
     .option(
       "-s, --symbol <symbol>",
       "A short symbol for the tokens in this contract"
@@ -272,7 +273,7 @@ async function deploy(options) {
         }
   );
   const filename = options.output;
-  const info = await deployContract(answers.name, answers.symbol);
+  const info = await deployContract(answers);
   await saveDeploymentInfo(info, filename);
 }
 

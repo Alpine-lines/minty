@@ -313,7 +313,7 @@ class Minty {
     // Call the mintToken method to issue a new token to the given address
     // This returns a transaction object, but the transaction hasn't been confirmed
     // yet, so it doesn't have our token id.
-    const tx = await this.contract.mintToken(ownerAddress, metadataURI);
+    const tx = await this.contract.mintToken(metadataURI);
 
     // The OpenZeppelin base ERC721 contract emits a Transfer event when a token is issued.
     // tx.wait() will wait until a block containing our transaction has been mined and confirmed.
