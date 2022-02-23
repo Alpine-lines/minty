@@ -74,25 +74,67 @@ Once you have the local Ethereum network and IPFS daemon running, minting an NFT
 
 First, let's create something to mint. NFTs have a huge range of use-cases, so we're going to create a ticket for an flight to the moon.
 
-1. Create a file called `flight-to-the-moon.txt`:
+1. Create a file called `flight-to-the-moon.json`:
 
    ```shell
-   touch ~/flight-to-the-moon.txt
+   touch ~/flight-to-the-moon.json
    ```
 
-1. Open the file and enter some flight information:
+2. Open the file and enter some flight information:
 
-   ```
-   THE INTERPLANETARY TRAVEL COMPANY
-   ---------------------------------
-   Departing: Cape Canaveral, Earth
-   Arriving: Base 314, The Moon
-   Boarding time: 17:30 UTC
-   Seat number: 1A
-   Baggage allowance: 5kg
-   ```
+```
+{
+   "name": "Moon Flight #4",
+   "description": "This ticket serves as proof-of-ownership of a first-class seat on a flight to the moon.",
+   "attributes": [
+      {
+         "trait_type": "Base",
+         "value": "Starfish"
+      },
+      {
+         "trait_type": "Eyes",
+         "value": "Big"
+      },
+      {
+         "trait_type": "Mouth",
+         "value": "Surprised"
+      },
+      {
+         "trait_type": "Level",
+         "value": 5
+      },
+      {
+         "trait_type": "Stamina",
+         "value": 1.4
+      },
+      {
+         "trait_type": "Personality",
+         "value": "Sad"
+      },
+      {
+         "display_type": "boost_number",
+         "trait_type": "Aqua Power",
+         "value": 40
+      },
+      {
+         "display_type": "boost_percentage",
+         "trait_type": "Stamina Increase",
+         "value": 10
+      },
+      {
+         "display_type": "number",
+         "trait_type": "Generation",
+         "value": 2
+      }
+   ],
+   "external_url": "https://alpinelines.dev/nft"
+}
 
-1. Save and close the file.
+```
+
+3. Save and close the file.
+
+4. Find an image you enjoy and collect its path, i.e. ~/pictures/profile.jpg
 
 ### Mint the file
 
@@ -101,7 +143,7 @@ Now that we've got our ticket, we can mint it.
 1. Call the `mint` command and supply the file we want to mint, the name of our NFT, and a description:
 
    ```shell
-   minty mint ~/flight-to-the-moon.txt --name "Moon Flight #1" --description "This ticket serves as proof-of-ownership of a first-class seat on a flight to the moon."
+   minty mint ~/pictures/profile.jpg --file ~/flight-to-the-moon.json
 
    > 🌿 Minted a new NFT:
    > Token ID:              1

@@ -16,9 +16,11 @@ deploy an instance of the Minty NFT contract
 
 Options:
   -o, --output <deploy-file-path>  Path to write deployment info to (default: "minty-deployment.json")
-  -c, --contract <contract>        Contract template to deploy. Must be either OpenMinty or PreMinty
+  -c, --contract <contract>        Contract template to deploy. Must be either Minty, OpenMinty, or
+                                   PreMinty
   -n, --name <name>                The name of the token contract
   -d, --description <desc>         A description of the token contract
+  -i, --image <image>              An image file path for the token contract
   -s, --symbol <symbol>            A short symbol for the tokens in this contract
   -e, --exUrl <exUrl>              The external url of the collection website
   -s, --sellerFee <fee>            The seller fee, in basis points, to be charged to opensea sellers and

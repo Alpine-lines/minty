@@ -79,7 +79,7 @@ async function main() {
     )
     .option(
       "-c, --contract <contract>",
-      "Contract template to deploy. Must be either OpenMinty or PreMinty"
+      "Contract template to deploy. Must be either Minty, OpenMinty, or PreMinty"
     )
     .option("-n, --name <name>", "The name of the token contract")
     .option("-d, --description <desc>", "A description of the token contract")
@@ -228,7 +228,8 @@ async function deploy(options) {
       ? !options.file
         ? {
             contract: {
-              message: "Select a contract template for your new NFT contract: ",
+              message:
+                "Select a contract template for your new NFT contract. Accepts Minty | OpenMinty | PreMinty ...",
             },
 
             name: {
