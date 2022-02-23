@@ -66,19 +66,19 @@ To install and run Minty, you must have NPM installed. Windows is not currently 
 1. Install the NPM dependencies:
 
    ```shell
-   npm install
+   yarn
    ```
 
 1. Add the `minty` command to your `$PATH`. This makes it easier to run Minty from anywhere on your computer:
 
    ```
-   npm link
+   yarn link
    ```
 
 1. Run the `start-local-environment.sh` script to start the local Ethereum testnet and IPFS daemon:
 
    ```shell
-   ./start-local-environment.sh
+   yarn setup
 
    > Compiling smart contract
    > Compiling 16 files with 0.7.3
@@ -122,7 +122,7 @@ Deploying this contract to the Ethereum mainnet is a bad idea since the contract
 
 Configuration are stored in [`./config/default.js`](./config/default.js).
 
-The `./start-local-environment.sh` script will try to run a local IPFS daemon, which Minty will connect to on its default port. If you've already installed IPFS and configured it to use a non-standard API port, you may need to change the `ipfsApiUrl` field to set the correct API address.
+The `yarn setup` script (`./start-local-environment.sh`) will try to run a local IPFS daemon, which Minty will connect to on its default port. If you've already installed IPFS and configured it to use a non-standard API port, you may need to change the `ipfsApiUrl` field to set the correct API address.
 
 The `pinningService` configuration option is used by the `minty pin` command to persist IPFS data to a remote pinning service.
 
