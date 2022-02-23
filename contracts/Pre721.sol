@@ -8,8 +8,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 // import "@openzeppelin/contracts/utils/Strings.sol";
-import "./common/meta-transactions/ContentMixin.sol";
-import "./common/meta-transactions/NativeMetaTransaction.sol";
+import "./modules/common/meta-transactions/ContentMixin.sol";
+import "./modules/common/meta-transactions/NativeMetaTransaction.sol";
 
 contract OwnableDelegateProxy {}
 
@@ -20,7 +20,7 @@ contract ProxyRegistry {
     mapping(address => OwnableDelegateProxy) public proxies;
 }
 
-contract Pre721 is ERC721, ERC721URIStorage, ContextMixin, NativeMetaTransaction, Ownable {
+abstract contract Pre721 is ERC721, ERC721URIStorage, ContextMixin, NativeMetaTransaction, Ownable {
     using SafeMath for uint256;
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
@@ -68,11 +68,14 @@ contract Pre721 is ERC721, ERC721URIStorage, ContextMixin, NativeMetaTransaction
         _safeMint(_msgSender(), id);
 
         _setTokenURI(id, metadataURI);
-        emit PermanentURI(metadataURI, id); // Remove if tokenURI changes overtime with token state.
+        emit PermanentURI(metadataURI, id); 
 
         return id;
     }
 
+    /** 
+     * @dev Make _burn implementation of ERC721URIStorage impossible to call.
+     */
     function _burn(uint _id) internal pure override(ERC721, ERC721URIStorage) {
         require(_id == 99999999999999999999, "NO BURNING"); // Always reverts
     }

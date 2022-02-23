@@ -7,7 +7,8 @@
     "test": "yarn hardhat test && echo 'TODO: write minty tests.",
     "test:hardhat": "yarn harhat test",
     "test:minty": "echo 'TODO: write minty tests.",
-    "setup": "./start-local-environment"
+    "setup": "./start-local-environment",
+    "clean": "yarn hardhat clean"
   },
   "bin": {
     "minty": "src/index.js"

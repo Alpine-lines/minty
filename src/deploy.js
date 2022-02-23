@@ -12,6 +12,7 @@ const { BigNumber } = require("ethers");
 // See https://www.npmjs.com/package/getconfig for info on how to override the default config for
 // different environments (e.g. testnet, mainnet, staging, production, etc).
 const config = require("getconfig");
+const { NONAME } = require("dns");
 
 // ipfs.add parameters for more deterministic CIDs
 const ipfsAddOptions = {
@@ -23,12 +24,13 @@ const ipfs = ipfsClient(config.ipfsApiUrl);
 
 async function deployContract(options) {
   const { name, image, symbol, contract } = options;
-  console.log(name, image, symbol, contract);
+  //   console.log(name, image, symbol, contract);
 
   const hardhat = require("hardhat");
   const network = hardhat.network.name;
 
   let imageURI;
+  let imageGatewayURL;
 
   if (image) {
     // fetch image content
@@ -50,8 +52,8 @@ async function deployContract(options) {
       ipfsAddOptions
     );
     imageURI = ensureIpfsUriPrefix(imageCid) + "/" + basename;
+    imageGatewayURL = makeGatewayURL(imageURI);
   }
-  const imageGatewayURL = makeGatewayURL(imageURI);
 
   // make the NFT metadata JSON
   const md = await makeContractMetadata(imageURI, options);
@@ -67,7 +69,8 @@ async function deployContract(options) {
   // OpenSea proxy registry addresses for rinkeby and mainnet.
   let proxyRegistryAddress = "";
   let mockProxy;
-  if (network == "localhost") {
+
+  if (network === "localhost" && contract !== "Minty") {
     const signers = await hardhat.ethers.getSigners();
 
     const MockProxy = await hardhat.ethers.getContractFactory(
@@ -88,12 +91,13 @@ async function deployContract(options) {
     `deploying contract for token ${name} (${symbol}) to network "${network}". You can now view contract metadata at ${metadataGatewayURL} ...`
   );
   const Minty = await hardhat.ethers.getContractFactory(contract);
-  const minty = await Minty.deploy(
-    name,
-    symbol,
-    metadataURI,
-    mockProxy.address
-  );
+  let minty;
+
+  if (contract === "Minty") {
+    minty = await Minty.deploy(name, symbol, metadataURI);
+  } else if (contract === "PreMinty" || contract === "OpenMinty") {
+    minty = await Minty.deploy(name, symbol, metadataURI, mockProxy.address);
+  }
 
   await minty.deployed();
   console.log(

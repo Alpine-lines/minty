@@ -136,8 +136,10 @@ class Minty {
       ownerAddress = await this.defaultOwnerAddress();
     }
 
-    // mint a new token referencing the metadata URI
-    const tokenId = await this.mintToken(ownerAddress, metadataURI);
+    const contractTemplate = this.deployInfo.template;
+    let tokenId;
+
+    this.mintToken({ ownerAddress, metadataURI });
 
     // format and return the results
     return {
@@ -313,7 +315,19 @@ class Minty {
     // Call the mintToken method to issue a new token to the given address
     // This returns a transaction object, but the transaction hasn't been confirmed
     // yet, so it doesn't have our token id.
-    const tx = await this.contract.mintToken(metadataURI);
+
+    let tx;
+
+    if (contractTemplate === "Minty") {
+      console.log("Minty Template Found", { ownerAddress, metadataURI });
+      tx = await this.contract.mintToken(ownerAddress, metadataURI);
+    } else if (
+      contractTemplate === "PreMinty" ||
+      contractTemplate === "OpenMinty"
+    ) {
+      console.log("OpenMinty || PreMinty Template Found", { metadataURI });
+      tx = await this.contract.mintToken(metadataURI);
+    }
 
     // The OpenZeppelin base ERC721 contract emits a Transfer event when a token is issued.
     // tx.wait() will wait until a block containing our transaction has been mined and confirmed.
