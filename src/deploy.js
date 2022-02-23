@@ -5,7 +5,7 @@ const inquirer = require("inquirer");
 const { BigNumber } = require("ethers");
 const config = require("getconfig");
 
-const CONTRACT_NAME = "Minty";
+// const CONTRACT_NAME = "Minty";
 
 // ipfs.add parameters for more deterministic CIDs
 const ipfsAddOptions = {
@@ -14,7 +14,7 @@ const ipfsAddOptions = {
 };
 
 async function deployContract(options) {
-  const { name, image, symbol } = options;
+  const { name, image, symbol, contract } = options;
 
   const hardhat = require("hardhat");
   const network = hardhat.network.name;
@@ -67,7 +67,7 @@ async function deployContract(options) {
   console.log(
     `deploying contract for token ${name} (${symbol}) to network "${network}". You can now view contract metadata at ${metadataURI}..`
   );
-  const Minty = await hardhat.ethers.getContractFactory(CONTRACT_NAME);
+  const Minty = await hardhat.ethers.getContractFactory(contract);
   const minty = await Minty.deploy(name, symbol, metadataURI);
 
   await minty.deployed();
@@ -75,7 +75,7 @@ async function deployContract(options) {
     `deployed contract for token ${name} (${symbol}) to ${minty.address} (network: ${network}, metadata: ${metadataURI})`
   );
 
-  return deploymentInfo(hardhat, minty);
+  return deploymentInfo(hardhat, minty, contract);
 }
 
 function makeContractMetadata(assetURI, options) {
@@ -122,11 +122,11 @@ function makeContractMetadata(assetURI, options) {
   return md;
 }
 
-function deploymentInfo(hardhat, minty) {
+function deploymentInfo(hardhat, minty, contract) {
   return {
     network: hardhat.network.name,
     contract: {
-      name: CONTRACT_NAME,
+      name: contract,
       address: minty.address,
       signerAddress: minty.signer.address,
       abi: minty.interface.format(),
@@ -192,6 +192,7 @@ function validateDeploymentInfo(deployInfo) {
     }
   };
 
+  required("contract");
   required("name");
   required("address");
   required("abi");

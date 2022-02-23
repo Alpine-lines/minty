@@ -8,28 +8,6 @@ associated data on IPFS. You can also use Minty to pin your data on an IPFS pinn
 Run `minty help` to see full usage instructions or `minty help <command>` for help on a specific command:
 
 ```shell
-minty help mint
-
-Usage: minty mint [options] <image-path>
-
-create a new NFT from an image file
-
-Options:
-  -m, --metadata <metadata>    JSON content containing NFT metadata
-  -f, --file <file>            Path of  JSON file containing NFT metadata
-  -n, --name <name>            The name of the NFT
-  -d, --description <desc>     A description of the NFT
-  -a, --attrs <attrs>          An attributes json file path for the NFT
-  -e, --exUrl <exUrl>          An external URL where the NFT can be found
-  -b, --background <bg>        Opensea NFT hexidecimal background color
-  -a, --animation <animation>  URL where NFT animation can be found
-  -v, --video <video>          URL where video can be found, i.e. https://youtube.com/<uri>
-  -o, --owner <address>        The ethereum address that should own the NFT.If not provided, defaults to
-                               the first signing address.
-  -h, --help                   display help for command
-```
-
-```shell
 minty help deploy
 
 Usage: minty deploy [options]
@@ -49,6 +27,28 @@ Options:
   -m, --metadata <metadata>        The token contracts metadata in JSON format
   -f, --file <file>                Path to the JSON file containing the token contracts metadata.
   -h, --help                       display help for command
+```
+
+```shell
+minty help mint
+
+Usage: minty mint [options] <image-path>
+
+create a new NFT from an image file
+
+Options:
+  -m, --metadata <metadata>    JSON content containing NFT metadata
+  -f, --file <file>            Path of  JSON file containing NFT metadata
+  -n, --name <name>            The name of the NFT
+  -d, --description <desc>     A description of the NFT
+  -a, --attrs <attrs>          An attributes json file path for the NFT
+  -e, --exUrl <exUrl>          An external URL where the NFT can be found
+  -b, --background <bg>        Opensea NFT hexidecimal background color
+  -a, --animation <animation>  URL where NFT animation can be found
+  -v, --video <video>          URL where video can be found, i.e. https://youtube.com/<uri>
+  -o, --owner <address>        The ethereum address that should own the NFT.If not provided, defaults to
+                               the first signing address.
+  -h, --help                   display help for command
 ```
 
 ## Setup

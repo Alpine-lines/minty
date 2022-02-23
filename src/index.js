@@ -77,6 +77,7 @@ async function main() {
       "Path to write deployment info to",
       config.deploymentConfigFile || "minty-deployment.json"
     )
+    .option("-c, --contract <contract>", "OpenMinty | PreMinty")
     .option("-n, --name <name>", "The name of the token contract")
     .option("-d, --description <desc>", "A description of the token contract")
     .option(

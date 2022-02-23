@@ -4,7 +4,10 @@
   "description": "",
   "main": "src/minty.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "yarn hardhat test && echo 'TODO: write minty tests.",
+    "test:hardhat": "yarn harhat test",
+    "test:minty": "echo 'TODO: write minty tests.",
+    "setup": "./start-local-environment"
   },
   "bin": {
     "minty": "src/index.js"
