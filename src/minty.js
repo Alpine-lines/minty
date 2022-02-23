@@ -186,7 +186,17 @@ class Minty {
   async makeNFTMetadata(assetURI, options) {
     let md;
     let attributes;
-    const { metadata, file, name, description, attrs, exUrl } = options;
+    const {
+      metadata,
+      file,
+      name,
+      description,
+      attrs,
+      exUrl,
+      bg,
+      animation,
+      video,
+    } = options;
     assetURI = ensureIpfsUriPrefix(assetURI);
     if (!metadata) {
       if (!file) {
@@ -208,6 +218,9 @@ class Minty {
           attributes: attributes,
           image: assetURI,
           external_url: exUrl,
+          background_color: bg,
+          animation_url: animation,
+          video_url: video,
         };
   }
 

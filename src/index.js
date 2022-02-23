@@ -34,6 +34,15 @@ async function main() {
     .option("-d, --description <desc>", "A description of the NFT")
     .option("-a, --attrs <attrs>", "An attributes json file path for the NFT")
     .option("-e, --exUrl <exUrl>", "An external URL where the NFT can be found")
+    .option("-b, --background <bg>", "Opensea NFT hexidecimal background color")
+    .option(
+      "-a, --animation <animation>",
+      "URL where NFT animation can be found"
+    )
+    .option(
+      "-v, --video <video>",
+      "URL where video can be found, i.e. https://youtube.com/<uri>"
+    )
     .option(
       "-o, --owner <address>",
       "The ethereum address that should own the NFT." +
@@ -108,6 +117,16 @@ async function createNFT(imagePath, options) {
 
             exUrl: {
               message: "Enter an external url for your new NFT: ",
+            },
+            bg: {
+              message:
+                "Enter a hexidecimal color code for Opensea NFT background.",
+            },
+            animation: {
+              message: "Enter an animation URL for your new NFT.",
+            },
+            video: {
+              message: "Enter a video URL for your new NFT.",
             },
           }
         : {
