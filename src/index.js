@@ -29,11 +29,11 @@ async function main() {
     .command("mint <image-path>")
     .description("create a new NFT from an image file")
     .option("-m, --metadata <metadata>", "JSON content containing NFT metadata")
-    .option("-f --file <file>", "Path of  JSON file containing NFT metadata")
+    .option("-f, --file <file>", "Path of  JSON file containing NFT metadata")
     .option("-n, --name <name>", "The name of the NFT")
     .option("-d, --description <desc>", "A description of the NFT")
     .option("-a, --attrs <attrs>", "An attributes json file path for the NFT")
-    .option("-e, --exurl <exurl>", "An external URL where the NFT can be found")
+    .option("-e, --exUrl <exUrl>", "An external URL where the NFT can be found")
     .option(
       "-o, --owner <address>",
       "The ethereum address that should own the NFT." +
@@ -85,8 +85,6 @@ async function main() {
   await program.parseAsync(process.argv);
 }
 
-// ---- command action functions
-
 async function createNFT(imagePath, options) {
   const minty = await MakeMinty();
 
@@ -108,7 +106,7 @@ async function createNFT(imagePath, options) {
               message: "Enter an attributes json file path for your new NFT: ",
             },
 
-            exurl: {
+            exUrl: {
               message: "Enter an external url for your new NFT: ",
             },
           }

@@ -79,13 +79,17 @@ class Minty {
    * @param {Buffer|Uint8Array} content - a Buffer or UInt8Array of data (e.g. for an image)
    * @param {object} options
    * @param {?string} path - optional file path to set when storing the data on IPFS
-   * @property {object} json - the JSON metadata to be stored in IPFS and referenced by the token's metadata URI
+   * @param {object} metadata - the raw JSON metadata to be stored in IPFS and referenced by the token's metadata URI
+   * @param {?string} file - optional JSON file path containing NFT metadata to store pin to IPFS
    * @param {?string} name - optional name to set in NFT metadata
    * @param {?string} description - optional description to store in NFT metadata
    * @param {?string} owner - optional ethereum address that should own the new NFT.
    * If missing, the default signing address will be used.
-   * @param {?array} attributes - optional attributes json file to store in NFT metadata
-   * @param {?string} externalUrl - optional external url to store in NFT metadata
+   * @param {?array} attrs - optional attributes json file to store in NFT metadata
+   * @param {?string} exUrl - optional external url to store in NFT metadata
+   * @param {?string} bg - optional background color to store in NFT metadata
+   * @param {?string} animation - optional animation url to store in NFT metadata
+   * @param {?string} video - optional video url to store in NFT metadata
    *
    * @typedef {object} CreateNFTResult
    * @property {string} tokenId - the unique ID of the new token
@@ -168,16 +172,21 @@ class Minty {
    * Helper to construct metadata JSON for
    * @param {string} assetCid - IPFS URI for the NFT asset
    * @param {object} options
+   * @param {object} metadata - the raw JSON metadata to be stored in IPFS and referenced by the token's metadata URI
+   * @param {?string} file - optional JSON file path containing NFT metadata to store pin to IPFS
    * @param {?string} name - optional name to set in NFT metadata
    * @param {?string} description - optional description to store in NFT metadata
    * @param {?array} attrs - optional attributes json file to store in NFT metadata
-   * @param {?string} exurl - optional external url to store in NFT metadata
+   * @param {?string} exUrl - optional external url to store in NFT metadata
+   * @param {?string} bg - optional background color to store in NFT metadata
+   * @param {?string} animation - optional animation url to store in NFT metadata
+   * @param {?string} video - optional video url to store in NFT metadata
    * @returns {object} - NFT metadata object
    */
   async makeNFTMetadata(assetURI, options) {
     let md;
     let attributes;
-    const { metadata, file, name, description, attrs, exurl } = options;
+    const { metadata, file, name, description, attrs, exUrl } = options;
     assetURI = ensureIpfsUriPrefix(assetURI);
     if (!metadata) {
       if (!file) {
@@ -198,7 +207,7 @@ class Minty {
           description,
           attributes: attributes,
           image: assetURI,
-          external_url: exurl,
+          external_url: exUrl,
         };
   }
 
