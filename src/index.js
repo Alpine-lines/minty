@@ -201,9 +201,13 @@ async function mintBulk(options) {
 
   const { ids, ipfsImageDir, ipfsMetadataDir } = await minty.bulkMint(options);
 
+  const output = [];
+
   output.push(["Minted Token IDs:", chalk.blue(ids)]);
   output.push(["IPFS Image CID:", chalk.blue(ipfsImageDir)]);
   output.push(["IPFS Metadata JSON CID:", chalk.blue(ipfsMetadataDir)]);
+
+  alignOutput(output);
 }
 
 async function getNFT(tokenId, options) {
