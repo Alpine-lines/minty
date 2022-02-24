@@ -1,6 +1,8 @@
 const fs = require("fs/promises");
 const path = require("path");
-
+const util = require("util");
+var spawn = require("child_process").spawn;
+const exec = util.promisify(require("child_process").exec);
 const CID = require("cids");
 const ipfsClient = require("ipfs-http-client");
 const all = require("it-all");
@@ -15,6 +17,7 @@ const { loadDeploymentInfo } = require("./deploy");
 // different environments (e.g. testnet, mainnet, staging, production, etc).
 const config = require("getconfig");
 const { JsonRpcBatchProvider } = require("@ethersproject/providers");
+const { options } = require("ipfs-http-client/src/lib/core");
 
 // ipfs.add parameters for more deterministic CIDs
 const ipfsAddOptions = {
@@ -136,7 +139,6 @@ class Minty {
       ownerAddress = await this.defaultOwnerAddress();
     }
 
-    const contractTemplate = this.deployInfo.template;
     let tokenId;
 
     this.mintToken({ ownerAddress, metadataURI });
@@ -168,6 +170,62 @@ class Minty {
   async createNFTFromAssetFile(filename, options) {
     const content = await fs.readFile(filename);
     return this.createNFTFromAssetData(content, { ...options, path: filename });
+  }
+
+  /**
+   *
+   * @param {string} imageDir
+   * @param {string} metadataDir
+   * @param {object} options
+   * @param {?string} ownerAddress
+   * @returns
+   */
+  async bulkMint(options) {
+    console.log(options);
+    const { imageDir, metadataDir } = options;
+
+    let ipfsImageDir;
+    let ipfsMetadataDir;
+
+    spawn("ipfs", [`add`, `-r`, `${imageDir}`], { stdio: "inherit" });
+
+    const setImage = async (file) => {
+      const filePath = `${metadataDir}${file}`;
+      const data = await fs.readFileSync(filePath);
+      const parsedData = JSON.parse(data);
+      parsedData.image = `ipfs://${ipfsImageDir}/file`;
+      await fs.writeFileSync(filePath, JSON.stringify(parsedData));
+    };
+
+    // console.log(metadataDir);
+    await fs.readdir(metadataDir, (err, files) => {
+      if (err) {
+        console.error(err);
+      }
+      files.forEach((f) => setImage(f));
+    });
+
+    spawn("ipfs", [`add`, `-r`, `${metadataDir}`], { stdio: "inherit" });
+
+    // get the default signing address if no owner is given
+    const ownerAddress = await this.defaultOwnerAddress();
+
+    let ids = [];
+
+    await fs.readdir(metadataDir, (err, files) => {
+      if (err) {
+        console.error(err);
+      }
+      files.forEach((f) => {
+        const id = this.mintToken({
+          ownerAddress,
+          metadataURI: `${ipfsMetadataDir}/${f}`,
+        });
+        ids.push(id);
+      });
+    });
+
+    return { ids, ipfsImageDir, ipfsMetadataDir };
   }
 
   /**
@@ -317,6 +375,8 @@ class Minty {
     // yet, so it doesn't have our token id.
 
     let tx;
+
+    const contractTemplate = this.deployInfo.template;
 
     if (contractTemplate === "Minty") {
       console.log("Minty Template Found", { ownerAddress, metadataURI });

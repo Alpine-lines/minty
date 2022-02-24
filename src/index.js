@@ -51,6 +51,22 @@ async function main() {
     .action(createNFT);
 
   program
+    .command("mint-bulk")
+    .description(
+      "bulk mint n NFTs and upload n images and metadata.json objects to IPFS w/ optional pinning service."
+    )
+    .option(
+      "-i, --imageDir <imageDir>",
+      "Image directory path where collection images are held"
+    )
+    .option(
+      "-m, --metadataDir <metadataDir>",
+      "Metadata directory path where metada JSON files are held"
+    )
+    .option("-o, --owner <owner>", "Address where new tokens will be sent.")
+    .action(mintBulk);
+
+  program
     .command("show <token-id>")
     .description("get info about an NFT using its token ID")
     .option(
@@ -178,6 +194,16 @@ async function createNFT(imagePath, options) {
   ]);
   console.log("NFT Metadata:");
   console.log(colorize(JSON.stringify(nft.metadata), colorizeOptions));
+}
+
+async function mintBulk(options) {
+  const minty = await MakeMinty();
+
+  const { ids, ipfsImageDir, ipfsMetadataDir } = await minty.bulkMint(options);
+
+  output.push(["Minted Token IDs:", chalk.blue(ids)]);
+  output.push(["IPFS Image CID:", chalk.blue(ipfsImageDir)]);
+  output.push(["IPFS Metadata JSON CID:", chalk.blue(ipfsMetadataDir)]);
 }
 
 async function getNFT(tokenId, options) {

@@ -3,7 +3,8 @@ pragma solidity ^0.8.0;
 
 // import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+// import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
@@ -20,7 +21,7 @@ contract ProxyRegistry {
     mapping(address => OwnableDelegateProxy) public proxies;
 }
 
-abstract contract Open721 is ERC721, ERC721URIStorage, ContextMixin, NativeMetaTransaction, Ownable {
+abstract contract Open721 is ERC721, Ownable, ContextMixin, NativeMetaTransaction {
     using SafeMath for uint256;
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
@@ -28,12 +29,16 @@ abstract contract Open721 is ERC721, ERC721URIStorage, ContextMixin, NativeMetaT
     address proxyRegistryAddress;
     string private CONTRACT_URI;
 
+    mapping(uint256 => string) private _tokenURIs;
+
     constructor(
         string memory _name, 
         string memory _symbol, 
         string memory _contractURI, 
         address _proxyRegistryAddress
-    ) ERC721(_name, _symbol) {
+    ) 
+        ERC721(_name, _symbol)
+    {
         proxyRegistryAddress = _proxyRegistryAddress;
         CONTRACT_URI = _contractURI;
         _initializeEIP712(_name);
@@ -41,16 +46,16 @@ abstract contract Open721 is ERC721, ERC721URIStorage, ContextMixin, NativeMetaT
 
     event PermanentURI(string _value, uint256 indexed _id); 
     
-    /**
-        @dev Returns the total tokens minted so far.
-        1 is always subtracted from the Counter since it tracks the next available tokenId.
-     */
     function totalSupply() public view returns (uint256) {
         return _tokenIds.current();
     }
 
-    function tokenURI(uint _id) public view override(ERC721, ERC721URIStorage) returns (string memory) {
-        return _tokenURIs[_id];
+    function _setTokenURI(uint tokenId, string memory _tokenURI) public {
+        _tokenURIs[tokenId] = _tokenURI;
+    }
+
+    function tokenURI(uint tokenId) public view override returns (string memory) {
+        return _tokenURIs[tokenId];
     }
 
     function contractURI() public view returns (string memory) {
@@ -72,16 +77,6 @@ abstract contract Open721 is ERC721, ERC721URIStorage, ContextMixin, NativeMetaT
         return id;
     }
 
-    /** 
-     * @dev Make _burn implementation of ERC721URIStorage impossible to call.
-     */
-    function _burn(uint _id) internal pure override(ERC721, ERC721URIStorage) {
-        require(_id == 99999999999999999999, "NO BURNING"); // Always reverts
-    }
-
-    /**
-     * Override isApprovedForAll to whitelist user's OpenSea proxy accounts to enable gas-less listings.
-     */
     function isApprovedForAll(address owner, address operator)
         override
         public
@@ -97,9 +92,6 @@ abstract contract Open721 is ERC721, ERC721URIStorage, ContextMixin, NativeMetaT
         return super.isApprovedForAll(owner, operator);
     }
 
-    /**
-     * This is used instead of msg.sender as transactions won't be sent by the original token owner, but by OpenSea.
-     */
     function _msgSender()
         internal
         override
