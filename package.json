@@ -1,45 +1,46 @@
 {
-  "name": "minty",
-  "version": "1.0.0",
-  "description": "",
-  "main": "src/minty.js",
-  "scripts": {
-    "test": "yarn hardhat test && echo 'TODO: write minty tests.",
-    "test:hardhat": "yarn harhat test",
-    "test:minty": "echo 'TODO: write minty tests.",
-    "setup": "./start-local-environment",
-    "clean": "yarn hardhat clean"
-  },
-  "bin": {
-    "minty": "src/index.js"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "@nomiclabs/hardhat-ethers": "^2.0.1",
-    "@nomiclabs/hardhat-waffle": "^2.0.1",
-    "@openzeppelin/hardhat-upgrades": "^1.14.0",
-    "chai": "^4.3.3",
-    "ethereum-waffle": "^3.3.0",
-    "ethers": "^5.0.31",
-    "go-ipfs": "0.8.0",
-    "hardhat": "^2.1.1",
-    "typechain": "^7.0.0"
-  },
-  "dependencies": {
-    "@openzeppelin/contracts": "4.4.0",
-    "chalk": "^4.1.0",
-    "cids": "^1.1.6",
-    "commander": "^7.1.0",
-    "concurrently": "^6.0.0",
-    "dotenv": "^16.0.0",
-    "getconfig": "^4.5.0",
-    "hardhat-deploy-ethers": "^0.3.0-beta.13",
-    "inquirer": "^8.0.0",
-    "ipfs-http-client": "^49.0.4",
-    "it-all": "^1.0.5",
-    "json-colorizer": "^2.2.2",
-    "multiaddr": "^8.1.2"
-  }
+    "name": "minty",
+    "version": "1.0.0",
+    "description": "",
+    "main": "src/minty.js",
+    "scripts": {
+        "test": "yarn hardhat test && echo 'TODO: write minty tests.",
+        "test:hardhat": "yarn harhat test",
+        "test:minty": "echo 'TODO: write minty tests.",
+        "setup": "./start-local-environment",
+        "clean": "yarn hardhat clean"
+    },
+    "bin": {
+        "minty": "src/index.js"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+        "@nomiclabs/hardhat-ethers": "^2.0.1",
+        "@nomiclabs/hardhat-waffle": "^2.0.1",
+        "@openzeppelin/hardhat-upgrades": "^1.14.0",
+        "chai": "^4.3.3",
+        "ethereum-waffle": "^3.3.0",
+        "ethers": "^5.0.31",
+        "go-ipfs": "0.8.0",
+        "hardhat": "^2.1.1",
+        "ipfs-only-hash": "3.0.0",
+        "typechain": "^7.0.0"
+    },
+    "dependencies": {
+        "@openzeppelin/contracts": "4.4.0",
+        "chalk": "^4.1.0",
+        "cids": "^1.1.6",
+        "commander": "^7.1.0",
+        "concurrently": "^6.0.0",
+        "dotenv": "^16.0.0",
+        "getconfig": "^4.5.0",
+        "hardhat-deploy-ethers": "^0.3.0-beta.13",
+        "inquirer": "^8.0.0",
+        "ipfs-http-client": "49.0.4",
+        "it-all": "^1.0.5",
+        "json-colorizer": "^2.2.2",
+        "multiaddr": "^8.1.2"
+    }
 }

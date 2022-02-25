@@ -16,237 +16,244 @@ const { NONAME } = require("dns");
 
 // ipfs.add parameters for more deterministic CIDs
 const ipfsAddOptions = {
-  cidVersion: 1,
-  hashAlg: "sha2-256",
+    cidVersion: 1,
+    hashAlg: "sha2-256",
 };
 
 const ipfs = ipfsClient(config.ipfsApiUrl);
 
 async function deployContract(options) {
-  const { name, image, symbol, contract } = options;
-  //   console.log(name, image, symbol, contract);
+    const { name, image, symbol, contract } = options;
+    //   console.log(name, image, symbol, contract);
 
-  const hardhat = require("hardhat");
-  const network = hardhat.network.name;
+    const hardhat = require("hardhat");
+    const network = hardhat.network.name;
 
-  let imageURI;
-  let imageGatewayURL;
+    let imageURI;
+    let imageGatewayURL;
 
-  if (image) {
-    // fetch image content
-    const content = await fs.readFile(image);
+    if (image) {
+        // fetch image content
+        const content = await fs.readFile(image);
 
-    // add the asset to IPFS
-    const imagePath = image || "asset.bin";
-    const basename = path.basename(imagePath);
+        // add the asset to IPFS
+        const imagePath = image || "asset.bin";
+        const basename = path.basename(imagePath);
 
-    // When you add an object to IPFS with a directory prefix in its path,
-    // IPFS will create a directory structure for you. This is nice, because
-    // it gives us URIs with descriptive filenames in them e.g.
-    // 'ipfs://QmaNZ2FCgvBPqnxtkbToVVbK2Nes6xk5K4Ns6BsmkPucAM/cat-pic.png' instead of
-    // 'ipfs://QmaNZ2FCgvBPqnxtkbToVVbK2Nes6xk5K4Ns6BsmkPucAM'
-    const ipfsPath = "/contract/" + basename;
-    // const ipfsPath = basename;
-    const { cid: imageCid } = await ipfs.add(
-      { path: ipfsPath, content },
-      ipfsAddOptions
+        // When you add an object to IPFS with a directory prefix in its path,
+        // IPFS will create a directory structure for you. This is nice, because
+        // it gives us URIs with descriptive filenames in them e.g.
+        // 'ipfs://QmaNZ2FCgvBPqnxtkbToVVbK2Nes6xk5K4Ns6BsmkPucAM/cat-pic.png' instead of
+        // 'ipfs://QmaNZ2FCgvBPqnxtkbToVVbK2Nes6xk5K4Ns6BsmkPucAM'
+        const ipfsPath = "/contract/" + basename;
+        // const ipfsPath = basename;
+        const { cid: imageCid } = await ipfs.add(
+            { path: ipfsPath, content },
+            ipfsAddOptions
+        );
+        imageURI = ensureIpfsUriPrefix(imageCid) + "/" + basename;
+        imageGatewayURL = makeGatewayURL(imageURI);
+    }
+
+    // make the NFT metadata JSON
+    const md = await makeContractMetadata(imageURI, options);
+
+    // add the metadata to IPFS
+    const { cid: metadataCid } = await ipfs.add(
+        { path: "/contract/metadata.json", content: JSON.stringify(md) },
+        ipfsAddOptions
     );
-    imageURI = ensureIpfsUriPrefix(imageCid) + "/" + basename;
-    imageGatewayURL = makeGatewayURL(imageURI);
-  }
+    const metadataURI = ensureIpfsUriPrefix(metadataCid) + "/metadata.json";
+    const metadataGatewayURL = makeGatewayURL(metadataURI);
 
-  // make the NFT metadata JSON
-  const md = await makeContractMetadata(imageURI, options);
+    // OpenSea proxy registry addresses for rinkeby and mainnet.
+    let proxyRegistryAddress = "";
+    let mockProxy;
 
-  // add the metadata to IPFS
-  const { cid: metadataCid } = await ipfs.add(
-    { path: "/contract/metadata.json", content: JSON.stringify(md) },
-    ipfsAddOptions
-  );
-  const metadataURI = ensureIpfsUriPrefix(metadataCid) + "/metadata.json";
-  const metadataGatewayURL = makeGatewayURL(metadataURI);
+    if (network === "localhost" && contract !== "Minty") {
+        const signers = await hardhat.ethers.getSigners();
 
-  // OpenSea proxy registry addresses for rinkeby and mainnet.
-  let proxyRegistryAddress = "";
-  let mockProxy;
+        const MockProxy = await hardhat.ethers.getContractFactory(
+            "MockProxyRegistry"
+        );
+        mockProxy = await MockProxy.deploy();
 
-  if (network === "localhost" && contract !== "Minty") {
-    const signers = await hardhat.ethers.getSigners();
+        await mockProxy.deployed();
+        // console.log(signers, signers[0]);
+        await mockProxy.setProxy(signers[0].address, signers[9].address);
+    } else if (network === "rinkeby") {
+        proxyRegistryAddress = "0xf57b2c51ded3a29e6891aba85459d600256cf317";
+    } else {
+        proxyRegistryAddress = "0xa5409ec958c83c3f309868babaca7c86dcb077c1";
+    }
 
-    const MockProxy = await hardhat.ethers.getContractFactory(
-      "MockProxyRegistry"
+    console.log(
+        `deploying contract for token ${name} (${symbol}) to network "${network}". You can now view contract metadata at ${metadataGatewayURL} ...`
     );
-    mockProxy = await MockProxy.deploy();
+    const Minty = await hardhat.ethers.getContractFactory(contract);
+    let minty;
 
-    await mockProxy.deployed();
-    // console.log(signers, signers[0]);
-    await mockProxy.setProxy(signers[0].address, signers[9].address);
-  } else if (network === "rinkeby") {
-    proxyRegistryAddress = "0xf57b2c51ded3a29e6891aba85459d600256cf317";
-  } else {
-    proxyRegistryAddress = "0xa5409ec958c83c3f309868babaca7c86dcb077c1";
-  }
+    if (contract === "Minty") {
+        minty = await Minty.deploy(name, symbol, metadataURI);
+    } else if (contract === "PreMinty" || contract === "OpenMinty") {
+        minty = await Minty.deploy(
+            name,
+            symbol,
+            metadataURI,
+            mockProxy.address
+        );
+    }
 
-  console.log(
-    `deploying contract for token ${name} (${symbol}) to network "${network}". You can now view contract metadata at ${metadataGatewayURL} ...`
-  );
-  const Minty = await hardhat.ethers.getContractFactory(contract);
-  let minty;
+    await minty.deployed();
+    console.log(
+        `deployed contract for token ${name} (${symbol}) to ${minty.address} (network: ${network}, metadata: ${metadataURI})`
+    );
 
-  if (contract === "Minty") {
-    minty = await Minty.deploy(name, symbol, metadataURI);
-  } else if (contract === "PreMinty" || contract === "OpenMinty") {
-    minty = await Minty.deploy(name, symbol, metadataURI, mockProxy.address);
-  }
-
-  await minty.deployed();
-  console.log(
-    `deployed contract for token ${name} (${symbol}) to ${minty.address} (network: ${network}, metadata: ${metadataURI})`
-  );
-
-  return deploymentInfo(hardhat, minty, contract, metadataURI);
+    return deploymentInfo(hardhat, minty, contract, metadataURI);
 }
 
 function makeContractMetadata(assetURI = "", options) {
-  const {
-    name,
-    description,
-    symbol,
-    external_url,
-    seller_fee_basis_points,
-    fee_recipient,
-    metadata,
-    file,
-  } = options;
-
-  let md;
-
-  if (!metadata) {
-    if (!file) {
-      md = {
+    const {
         name,
         description,
-        image: assetURI,
         symbol,
         external_url,
         seller_fee_basis_points,
         fee_recipient,
         metadata,
         file,
-      };
-    } else {
-      md = {
-        ...require(file),
-        image: assetURI,
-      };
-    }
-  } else {
-    md = {
-      ...JSON.parse(metadata),
-      image: assetURI,
-    };
-  }
+    } = options;
 
-  return md;
+    let md;
+
+    if (!metadata) {
+        if (!file) {
+            md = {
+                name,
+                description,
+                image: assetURI,
+                symbol,
+                external_url,
+                seller_fee_basis_points,
+                fee_recipient,
+                metadata,
+                file,
+            };
+        } else {
+            md = {
+                ...require(file),
+                image: assetURI,
+            };
+        }
+    } else {
+        md = {
+            ...JSON.parse(metadata),
+            image: assetURI,
+        };
+    }
+
+    return md;
 }
 
 function deploymentInfo(hardhat, minty, contract, metadataURI) {
-  return {
-    network: hardhat.network.name,
-    template: contract,
-    contract: {
-      name: contract,
-      address: minty.address,
-      signerAddress: minty.signer.address,
-      abi: minty.interface.format(),
-      metadataURI,
-    },
-  };
+    return {
+        network: hardhat.network.name,
+        template: contract,
+        contract: {
+            name: contract,
+            address: minty.address,
+            signerAddress: minty.signer.address,
+            abi: minty.interface.format(),
+            metadataURI,
+        },
+    };
 }
 
 async function saveDeploymentInfo(
-  info,
-  filename = undefined,
-  metadataURI = undefined
+    info,
+    filename = undefined,
+    metadataURI = undefined
 ) {
-  if (!filename) {
-    filename = config.deploymentConfigFile || "minty-deployment.json";
-  }
-  const exists = await fileExists(filename);
-  if (exists) {
-    const overwrite = await confirmOverwrite(filename);
-    if (!overwrite) {
-      return false;
+    if (!filename) {
+        filename = config.deploymentConfigFile || "minty-deployment.json";
     }
-  }
+    const exists = await fileExists(filename);
+    if (exists) {
+        const overwrite = await confirmOverwrite(filename);
+        if (!overwrite) {
+            return false;
+        }
+    }
 
-  console.log(`Writing deployment info to ${filename}`);
+    console.log(`Writing deployment info to ${filename}`);
 
-  if (metadataURI) {
-    info.contract.metadataURI = metadataURI;
-  }
-  const content = JSON.stringify(info, null, 2);
-  await fs.writeFile(filename, content, { encoding: "utf-8" });
+    if (metadataURI) {
+        info.contract.metadataURI = metadataURI;
+    }
+    const content = JSON.stringify(info, null, 2);
+    await fs.writeFile(filename, content, { encoding: "utf-8" });
 
-  return true;
+    return true;
 }
 
 async function loadDeploymentInfo() {
-  let { deploymentConfigFile } = config;
-  if (!deploymentConfigFile) {
-    console.log(
-      'no deploymentConfigFile field found in minty config. attempting to read from default path "./minty-deployment.json"'
-    );
-    deploymentConfigFile = "minty-deployment.json";
-  }
-  const content = await fs.readFile(deploymentConfigFile, { encoding: "utf8" });
-  deployInfo = JSON.parse(content);
-  try {
-    validateDeploymentInfo(deployInfo);
-  } catch (e) {
-    throw new Error(
-      `error reading deploy info from ${deploymentConfigFile}: ${e.message}`
-    );
-  }
-  return deployInfo;
+    let { deploymentConfigFile } = config;
+    if (!deploymentConfigFile) {
+        console.log(
+            'no deploymentConfigFile field found in minty config. attempting to read from default path "./minty-deployment.json"'
+        );
+        deploymentConfigFile = "minty-deployment.json";
+    }
+    const content = await fs.readFile(deploymentConfigFile, {
+        encoding: "utf8",
+    });
+    deployInfo = JSON.parse(content);
+    try {
+        validateDeploymentInfo(deployInfo);
+    } catch (e) {
+        throw new Error(
+            `error reading deploy info from ${deploymentConfigFile}: ${e.message}`
+        );
+    }
+    return deployInfo;
 }
 
 function validateDeploymentInfo(deployInfo) {
-  const { contract } = deployInfo;
-  if (!contract) {
-    throw new Error('required field "contract" not found');
-  }
-  const required = (arg) => {
-    if (!deployInfo.contract.hasOwnProperty(arg)) {
-      throw new Error(`required field "contract.${arg}" not found`);
+    const { contract } = deployInfo;
+    if (!contract) {
+        throw new Error('required field "contract" not found');
     }
-  };
+    const required = (arg) => {
+        if (!deployInfo.contract.hasOwnProperty(arg)) {
+            throw new Error(`required field "contract.${arg}" not found`);
+        }
+    };
 
-  required("name");
-  required("address");
-  required("abi");
-  required("metadataURI");
+    required("name");
+    required("address");
+    required("abi");
+    required("metadataURI");
 }
 
 async function fileExists(path) {
-  try {
-    await fs.access(path, F_OK);
-    return true;
-  } catch (e) {
-    return false;
-  }
+    try {
+        await fs.access(path, F_OK);
+        return true;
+    } catch (e) {
+        return false;
+    }
 }
 
 async function confirmOverwrite(filename) {
-  const answers = await inquirer.prompt([
-    {
-      type: "confirm",
-      name: "overwrite",
-      message: `File ${filename} exists. Overwrite it?`,
-      default: false,
-    },
-  ]);
-  return answers.overwrite;
+    const answers = await inquirer.prompt([
+        {
+            type: "confirm",
+            name: "overwrite",
+            message: `File ${filename} exists. Overwrite it?`,
+            default: false,
+        },
+    ]);
+    return answers.overwrite;
 }
 
 //////////////////////////////////////////////
@@ -258,22 +265,22 @@ async function confirmOverwrite(filename) {
  * @returns the input string with the `ipfs://` prefix stripped off
  */
 function stripIpfsUriPrefix(cidOrURI) {
-  if (cidOrURI.startsWith("ipfs://")) {
-    return cidOrURI.slice("ipfs://".length);
-  }
-  return cidOrURI;
+    if (cidOrURI.startsWith("ipfs://")) {
+        return cidOrURI.slice("ipfs://".length);
+    }
+    return cidOrURI;
 }
 
 function ensureIpfsUriPrefix(cidOrURI) {
-  let uri = cidOrURI.toString();
-  if (!uri.startsWith("ipfs://")) {
-    uri = "ipfs://" + cidOrURI;
-  }
-  // Avoid the Nyan Cat bug (https://github.com/ipfs/go-ipfs/pull/7930)
-  if (uri.startsWith("ipfs://ipfs/")) {
-    uri = uri.replace("ipfs://ipfs/", "ipfs://");
-  }
-  return uri;
+    let uri = cidOrURI.toString();
+    if (!uri.startsWith("ipfs://")) {
+        uri = "ipfs://" + cidOrURI;
+    }
+    // Avoid the Nyan Cat bug (https://github.com/ipfs/go-ipfs/pull/7930)
+    if (uri.startsWith("ipfs://ipfs/")) {
+        uri = uri.replace("ipfs://ipfs/", "ipfs://");
+    }
+    return uri;
 }
 
 /**
@@ -282,11 +289,11 @@ function ensureIpfsUriPrefix(cidOrURI) {
  * @returns - an HTTP url to view the IPFS object on the configured gateway.
  */
 function makeGatewayURL(ipfsURI) {
-  return config.ipfsGatewayUrl + "/" + stripIpfsUriPrefix(ipfsURI);
+    return config.ipfsGatewayUrl + "/" + stripIpfsUriPrefix(ipfsURI);
 }
 
 module.exports = {
-  deployContract,
-  loadDeploymentInfo,
-  saveDeploymentInfo,
+    deployContract,
+    loadDeploymentInfo,
+    saveDeploymentInfo,
 };

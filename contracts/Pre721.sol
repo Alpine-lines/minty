@@ -28,6 +28,7 @@ abstract contract Pre721 is ERC721, ContextMixin, NativeMetaTransaction, Ownable
 
     address proxyRegistryAddress;
     string private CONTRACT_URI;
+    uint256 private MAX_SUPPLY;
 
     mapping(uint256 => string) private _tokenURIs;
 
@@ -35,10 +36,13 @@ abstract contract Pre721 is ERC721, ContextMixin, NativeMetaTransaction, Ownable
         string memory _name, 
         string memory _symbol, 
         string memory _contractURI, 
+        uint256 _maxSupply,
         address _proxyRegistryAddress
     ) ERC721(_name, _symbol) {
+        console.log(_name, _symbol, _proxyRegistryAddress, _contractURI);
         proxyRegistryAddress = _proxyRegistryAddress;
         CONTRACT_URI = _contractURI;
+        MAX_SUPPLY = _maxSupply;
         _initializeEIP712(_name);
     }
 
@@ -50,6 +54,7 @@ abstract contract Pre721 is ERC721, ContextMixin, NativeMetaTransaction, Ownable
     }
 
     function _setTokenURI(uint256 tokenId, string memory _tokenURI) private {
+        console.log(tokenId, _tokenURI);
         _tokenURIs[tokenId] = _tokenURI;
     }
 
@@ -59,15 +64,17 @@ abstract contract Pre721 is ERC721, ContextMixin, NativeMetaTransaction, Ownable
     }
 
     function contractURI() public view returns (string memory) {
+        console.log(1);
         console.log(CONTRACT_URI);
         return CONTRACT_URI;
     }
 
     function mintToken(string memory metadataURI)
-    public
-    onlyOwner 
+        public
+        onlyOwner 
     returns (uint256)
     {
+        require(_tokenIds.current() < MAX_SUPPLY, "Maximum token supply already met!");
         _tokenIds.increment();
         uint256 id = _tokenIds.current();
 
@@ -75,7 +82,7 @@ abstract contract Pre721 is ERC721, ContextMixin, NativeMetaTransaction, Ownable
 
         _setTokenURI(id, metadataURI);
         emit PermanentURI(metadataURI, id); 
-
+        
         return id;
     }
 

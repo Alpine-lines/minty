@@ -60,34 +60,34 @@ To install and run Minty, you must have NPM installed. Windows is not currently 
 
 1. Clone this repository and move into the `minty` directory:
 
-   ```shell
-   git clone https://github.com/yusefnapora/minty
-   cd minty
-   ```
+    ```shell
+    git clone https://github.com/yusefnapora/minty
+    cd minty
+    ```
 
 1. Install the NPM dependencies:
 
-   ```shell
-   yarn
-   ```
+    ```shell
+    yarn
+    ```
 
 1. Add the `minty` command to your `$PATH`. This makes it easier to run Minty from anywhere on your computer:
 
-   ```
-   yarn link
-   ```
+    ```
+    yarn link
+    ```
 
 1. Run the `start-local-environment.sh` script to start the local Ethereum testnet and IPFS daemon:
 
-   ```shell
-   yarn setup
+    ```shell
+    yarn setup
 
-   > Compiling smart contract
-   > Compiling 16 files with 0.7.3
-   > ...
-   ```
+    > Compiling smart contract
+    > Compiling 16 files with 0.7.3
+    > ...
+    ```
 
-   This command continues to run. All further commands must be entered in another terminal window.
+    This command continues to run. All further commands must be entered in another terminal window.
 
 ## Deploy the contract
 

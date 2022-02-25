@@ -3,11 +3,12 @@ const path = require("path");
 const spawn = require("child_process").spawnSync;
 const CID = require("cids");
 const ipfsClient = require("ipfs-http-client");
+const { globSource } = require("ipfs-http-client");
 const all = require("it-all");
 const uint8ArrayConcat = require("uint8arrays/concat");
 const uint8ArrayToString = require("uint8arrays/to-string");
 const { BigNumber } = require("ethers");
-
+const Hash = require("ipfs-only-hash");
 const { loadDeploymentInfo } = require("./deploy");
 
 // The getconfig package loads configuration from files located in the the `config` directory.
@@ -164,7 +165,7 @@ class Minty {
      * If missing, the default signing address will be used.
      *
      * @returns {Promise<CreateNFTResult>}
-     */
+     **/
     async createNFTFromAssetFile(filename, options) {
         const content = await fs.readFile(filename);
         return this.createNFTFromAssetData(content, {
@@ -182,61 +183,27 @@ class Minty {
      * @returns
      */
     async bulkMint(options) {
-        // let imageDir = `/home/alpin/AlpineLines/equa/img/`;
-        // let metadataDir = `/home/alpin/AlpineLines/equa/md/`;
-        const { imageDir, metadataDir } = options;
-        let imgIpfs = " ";
-        let mdIpfs = " ";
+        const { metadataDir, mdCid } = options;
+
+        const files = await fs.readdir(metadataDir);
+
+        // get the address of the token owner from options, or use the default signing address if no owner is given
+        let ownerAddress = options.owner;
+        if (!ownerAddress) {
+            ownerAddress = await this.defaultOwnerAddress();
+        }
+
         let ids = [];
 
-        const setImage = async (file) => {
-            const filePath = `${metadataDir}${file}`;
-            const data = await fs.readFileSync(filePath);
-            const parsedData = JSON.parse(data);
-            parsedData.image = `ipfs://${imgIpfs}/file`;
-            await fs.writeFileSync(filePath, JSON.stringify(parsedData));
-        };
-
-        const writeMetadata = async (dir) => {
-            await fs.readdir(dir, (err, files) => {
-                if (err) {
-                    console.error(err);
-                }
-                files.forEach((f) => setImage(f));
-            });
-        };
-
-        const mint = async () => {
-            await fs.readdir(metadataDir, (err, files) => {
-                if (err) {
-                    console.error(err);
-                }
-                files.forEach(async (f) => {
-                    const id = await this.mintToken({
-                        ownerAddress: this.defaultOwnerAddress,
-                        metadataURI: metadataDir,
-                    });
-                    ids.push(id);
-                });
-            });
-        };
-
-        spawn("ipfs", [`add`, `-r`, imageDir], {
-            stdio: "inherit",
+        files.forEach(async (f) => {
+            const id = await this.mintToken(
+                ownerAddress,
+                `ipfs://${mdCid}/${f.split(".")[0]}`
+            );
+            ids.push(id);
         });
 
-        console.log("Images: DONE!!!");
-        writeMetadata(metadataDir);
-
-        spawn("ipfs", [`add`, `-r`, metadataDir], {
-            stdio: "inherit",
-        });
-
-        console.log("Metadata: DONE!!!");
-
-        await mint(metadataDir);
-
-        return { ids, imgIpfs, mdIpfs };
+        return { ids, metadataDir, mdCid };
     }
 
     /**
@@ -364,6 +331,7 @@ class Minty {
      */
     async getNFTMetadata(tokenId) {
         const metadataURI = await this.contract.tokenURI(tokenId);
+        console.log(metadataURI);
         const metadata = await this.getIPFSJSON(metadataURI);
 
         return { metadata, metadataURI };
@@ -685,16 +653,6 @@ function extractCID(cidOrURI) {
     const cidString = stripIpfsUriPrefix(cidOrURI).split("/")[0];
     return new CID(cidString);
 }
-
-const getJsonFile = (filePath, encoding = "utf8") =>
-    new Promise((resolve, reject) => {
-        fs.readFile(filePath, encoding, (err, contents) => {
-            if (err) {
-                return reject(err);
-            }
-            resolve(contents);
-        });
-    }).then(JSON.parse);
 
 //////////////////////////////////////////////
 // -------- Exports

@@ -10,55 +10,62 @@ let other;
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 describe("PreMinty", function () {
-  beforeEach(async function () {
-    const [deployer, other] = await ethers.getSigners();
+    let PreMinty;
+    let preMinty;
+    let deployer;
+    let other;
 
-    const mockProxyFactory = await ethers.getContractFactory(
-      "MockProxyRegistry",
-      deployer
-    );
-    const mockProxy = await mockProxyFactory.deploy();
+    beforeEach(async function () {
+        [deployer, other] = await ethers.getSigners();
 
-    expect(mockProxy.address).to.properAddress;
+        const mockProxyFactory = await ethers.getContractFactory(
+            "MockProxyRegistry",
+            deployer
+        );
+        const mockProxy = await mockProxyFactory.deploy();
 
-    const PreMinty = await ethers.getContractFactory("PreMinty");
-    const preMinty = await PreMinty.deploy(
-      "PreMinty!",
-      "PMNT",
-      "http://localhost:8080/ipfs/bafybeid5tuti2jodimmfbzql3jfwdeojtebei3f7bhb6ft47qbmpa4lf24/metadata.json",
-      mockProxy.address
-    );
+        expect(mockProxy.address).to.properAddress;
 
-    await preMinty.deployed();
-  });
-  it("Should return the new contract URI", async function () {
-    console.log(await preMinty.contractURI());
-    expect(await preMinty.contractURI()).to.equal(
-      "http://localhost:8080/ipfs/bafybeid5tuti2jodimmfbzql3jfwdeojtebei3f7bhb6ft47qbmpa4lf24/metadata.json"
-    );
-    expect(await preMinty.totalSupply()).to.equal(0);
-  });
-  it("Should mint a token and set the correct URI", async function () {
-    expect(
-      await preMinty.mintToken("ipfs://0x0000000000000/metadata.json")
-    ).to.equal(1);
-    expect(
-      await preMinty
-        .tokenURI(1)
-        .to.equal("ipfs://0x0000000000000/metadata.json")
-    );
-    expect(await preMinty.totalSupply().to.equal(1));
-  });
-  it("Should not be able to change the token URI", async function () {
-    expect(
-      await preMinty
-        ._setTokenURI("ipfs://0x11111111111/metadata.json")
-        .to.toBeReverted()
-    );
-    expect(
-      await preMinty
-        .tokenURI(1)
-        .to.equal("ipfs://0x0000000000000/metadata.json")
-    );
-  });
+        PreMinty = await ethers.getContractFactory("PreMinty");
+        preMinty = await PreMinty.deploy(
+            "PreMinty!",
+            "PMNT",
+            "http://bafybeifz7tu5nxbi4fm4gh2skuwhxbmgn4wmmnyfat3cvu4alsl63l2bbe.ipfs.localhost:8080/metadata.json",
+            11000,
+            mockProxy.address
+        );
+        await preMinty.deployed();
+    });
+    describe("Functionality", () => {
+        it("Should fetch the right contractURI and totalySupply", async () => {
+            expect(await preMinty.contractURI()).to.equal(
+                "http://bafybeifz7tu5nxbi4fm4gh2skuwhxbmgn4wmmnyfat3cvu4alsl63l2bbe.ipfs.localhost:8080/metadata.json"
+            );
+            expect(await preMinty.totalSupply()).to.equal(0);
+        });
+        it("Should mint a token and set the correct URI", async function () {
+            await preMinty.mintToken(
+                "ipfs://QmZvYPzPqMtxg4YrWHv1ojgr5d2BZP7Psm7agGrVTbA3GJ/metadata.json"
+            );
+            expect(await preMinty.tokenURI(1)).to.equal(
+                "ipfs://QmZvYPzPqMtxg4YrWHv1ojgr5d2BZP7Psm7agGrVTbA3GJ/metadata.json"
+            );
+            expect(await preMinty.totalSupply()).to.equal(1);
+            expect(await preMinty.balanceOf(deployer.address)).to.equal(1);
+            expect(await preMinty.ownerOf(1)).to.equal(deployer.address);
+        });
+        it("Should transfer the token", async function () {
+            await preMinty.mintToken(
+                "ipfs://QmZvYPzPqMtxg4YrWHv1ojgr5d2BZP7Psm7agGrVTbA3GJ/metadata.json"
+            );
+            await preMinty.transferFrom(deployer.address, other.address, 1);
+            expect(await preMinty.tokenURI(1)).to.equal(
+                "ipfs://QmZvYPzPqMtxg4YrWHv1ojgr5d2BZP7Psm7agGrVTbA3GJ/metadata.json"
+            );
+            expect(await preMinty.totalSupply()).to.equal(1);
+            expect(await preMinty.balanceOf(deployer.address)).to.equal(0);
+            expect(await preMinty.balanceOf(other.address)).to.equal(1);
+            expect(await preMinty.ownerOf(1)).to.equal(other.address);
+        });
+    });
 });
