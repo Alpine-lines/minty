@@ -105,7 +105,6 @@ class Minty {
      * @returns {Promise<CreateNFTResult>}
      */
     async createNFTFromAssetData(content, options) {
-        console.log(options);
         // add the asset to IPFS
         const filePath = options.path || "asset.bin";
         const basename = path.basename(filePath);
@@ -195,13 +194,15 @@ class Minty {
 
         let ids = [];
 
-        files.forEach(async (f) => {
-            const id = await this.mintToken(
-                ownerAddress,
-                `ipfs://${mdCid}/${f.split(".")[0]}`
-            );
-            ids.push(id);
-        });
+        for (const f of files) {
+            if (!f.includes("metadata")) {
+                const id = await this.mintToken(
+                    ownerAddress,
+                    `ipfs://${mdCid}/${f}`
+                );
+                ids.push(id);
+            }
+        }
 
         return { ids, metadataDir, mdCid };
     }

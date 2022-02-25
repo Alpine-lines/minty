@@ -23,8 +23,17 @@ const ipfsAddOptions = {
 const ipfs = ipfsClient(config.ipfsApiUrl);
 
 async function deployContract(options) {
-    const { name, image, symbol, contract } = options;
-    //   console.log(name, image, symbol, contract);
+    let { name, image, symbol, fee, recipient, contract, file } = options;
+
+    if (file) {
+        file = require(file);
+        name = file.name;
+        symbol = file.symbol;
+        description = file.description;
+        imageIpfs = file.image;
+        fee = file.seller_fee_basis_points;
+        recipient = file.recipient_address;
+    }
 
     const hardhat = require("hardhat");
     const network = hardhat.network.name;
@@ -100,6 +109,7 @@ async function deployContract(options) {
             name,
             symbol,
             metadataURI,
+            11000,
             mockProxy.address
         );
     }
@@ -112,7 +122,7 @@ async function deployContract(options) {
     return deploymentInfo(hardhat, minty, contract, metadataURI);
 }
 
-function makeContractMetadata(assetURI = "", options) {
+function makeContractMetadata(assetURI, options) {
     const {
         name,
         description,

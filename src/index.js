@@ -116,6 +116,10 @@ async function main() {
             config.deploymentConfigFile || "minty-deployment.json"
         )
         .option(
+            "-f, --file <file>",
+            "Collection metadata file for contract deployment."
+        )
+        .option(
             "-c, --contract <contract>",
             "Contract template to deploy. Must be either Minty, OpenMinty, or PreMinty"
         )
@@ -337,6 +341,14 @@ async function deploy(options) {
                       file: {
                           message:
                               "Enter a path for your NFT metadata JSON file: ",
+                      },
+
+                      contract: {
+                          message: "Enter a contract template: ",
+                      },
+
+                      image: {
+                          message: "Enter and image path for contract: ",
                       },
                   }
             : {
