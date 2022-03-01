@@ -1,8 +1,13 @@
 .idea
 node_modules
 minty-deployment.json
-config/default.env
+minty-deployment-mumbai.json
+minty-deployment-matic.json
+config/.env
 .env
+.wallet.json
+.secrets.json
+.hardhat.config.js
 
 #Hardhat files
 cache

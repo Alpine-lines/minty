@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.3;
 
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
@@ -69,7 +69,7 @@ abstract contract Pre721 is ERC721, ContextMixin, NativeMetaTransaction, Ownable
         return CONTRACT_URI;
     }
 
-    function mintToken(string memory metadataURI)
+    function mintToken(address _to, string memory metadataURI)
         public
         onlyOwner 
     returns (uint256)
@@ -78,7 +78,7 @@ abstract contract Pre721 is ERC721, ContextMixin, NativeMetaTransaction, Ownable
         _tokenIds.increment();
         uint256 id = _tokenIds.current();
 
-        _safeMint(_msgSender(), id);
+        _safeMint(_to, id);
 
         _setTokenURI(id, metadataURI);
         emit PermanentURI(metadataURI, id); 
@@ -87,22 +87,21 @@ abstract contract Pre721 is ERC721, ContextMixin, NativeMetaTransaction, Ownable
     }
 
     /**
-     * Override isApprovedForAll to whitelist user's OpenSea proxy accounts to enable gas-less listings.
-     */
-    function isApprovedForAll(address owner, address operator)
-        override
-        public
-        view
-        returns (bool)
-    {
-        // Whitelist OpenSea proxy contract for easy trading.
-        ProxyRegistry proxyRegistry = ProxyRegistry(proxyRegistryAddress);
-        if (address(proxyRegistry.proxies(owner)) == operator) {
+   * Override isApprovedForAll to auto-approve OS's proxy contract
+   */
+    function isApprovedForAll(
+        address _owner,
+        address _operator
+    ) public override view returns (bool isOperator) {
+      // if OpenSea's ERC721 Proxy Address is detected, auto-return true
+        if (_operator == address(0x58807baD0B376efc12F5AD86aAc70E78ed67deaE)) {
             return true;
         }
-
-        return super.isApprovedForAll(owner, operator);
+        
+        // otherwise, use the default ERC721.isApprovedForAll()
+        return ERC721.isApprovedForAll(_owner, _operator);
     }
+
 
     /**
      * This is used instead of msg.sender as transactions won't be sent by the original token owner, but by OpenSea.

@@ -110,7 +110,8 @@ async function deployContract(options) {
             symbol,
             metadataURI,
             11000,
-            mockProxy.address
+            "0xa5409ec958c83c3f309868babaca7c86dcb077c1"
+            // mockProxy.address ? mockProxy.address : proxyRegistryAddress
         );
     }
 

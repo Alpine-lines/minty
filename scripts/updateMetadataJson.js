@@ -1,27 +1,27 @@
-const fs = require("fs/promises");
+const fs = require("fs");
 
 const setImage = async (file, dir, uri) => {
     const filePath = `${dir}/${file}`;
-    const data = await fs.readFile(filePath);
+    const data = fs.readFileSync(filePath);
     const parsedData = JSON.parse(data);
     parsedData.image = uri;
-    // parsedData.external_url = "https://www.equa.global/nft-drop/";
-    // parsedData.seller_fee_basis_points = 250;
-    // parsedData.fee_recipient = "0xCaEa833339a610e3591D107bb746Ad18B474089f";
+    parsedData.external_url = "https://www.equa.global/nft-drop/";
+    parsedData.seller_fee_basis_points = 250;
+    parsedData.fee_recipient = "0xCaEa833339a610e3591D107bb746Ad18B474089f";
     console.log(parsedData);
-    await fs.writeFile(filePath, JSON.stringify(parsedData));
+    fs.writeFileSync(filePath, JSON.stringify(parsedData));
     console.log("Wrote image: " + uri + " to " + filePath);
 };
 
 const writeMetadata = async (dir, cid) => {
-    const files = await fs.readdir(dir);
+    const files = fs.readdirSync(dir);
     for (const f of files) {
-        const imageURI = `ipfs://${cid}/${f}`;
+        const imageURI = `ipfs://${cid}/${f.split(".")[0]}.png`;
         setImage(f, dir, imageURI);
     }
 };
 
 writeMetadata(
-    "/home/alpin/AlpineLines/equa/metadata/",
-    "QmXXb4e2YjWziM1oExY9yDeYsAcEqKA8UW7pzbJmUVgebd"
+    "/home/alpin/AlpineLines/equa/equabotzMetadata-1/",
+    "QmUR6yhJsi5RNkhKmLdw4GVVSjure46gDoskDfAwcqGUKH"
 );

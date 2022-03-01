@@ -29,6 +29,7 @@
         "typechain": "^7.0.0"
     },
     "dependencies": {
+        "@0x/subproviders": "^6.6.3",
         "@openzeppelin/contracts": "4.4.0",
         "chalk": "^4.1.0",
         "cids": "^1.1.6",

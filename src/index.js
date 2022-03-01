@@ -236,15 +236,13 @@ async function createNFT(imagePath, options) {
 async function mintBulk(options) {
     const minty = await MakeMinty();
 
-    const { ids, ipfsImageDir, ipfsMetadataDir } = await minty.bulkMint(
-        options
-    );
+    const { failed, ids, metadataDir, mdCid } = await minty.bulkMint(options);
 
     const output = [];
 
     output.push(["Minted Token IDs:", chalk.blue(ids)]);
-    output.push(["IPFS Image CID:", chalk.blue(ipfsImageDir)]);
-    output.push(["IPFS Metadata JSON CID:", chalk.blue(ipfsMetadataDir)]);
+    output.push(["Failed Token Mint Metadata Files:", chalk.blue(failed)]);
+    output.push(["IPFS Metadata JSON CID:", chalk.blue(mdCid)]);
 
     alignOutput(output);
 }

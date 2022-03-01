@@ -10,6 +10,7 @@ const uint8ArrayToString = require("uint8arrays/to-string");
 const { BigNumber } = require("ethers");
 const Hash = require("ipfs-only-hash");
 const { loadDeploymentInfo } = require("./deploy");
+// const { listOpenseaFixed } = require("./sell-opensea");
 
 // The getconfig package loads configuration from files located in the the `config` directory.
 // See https://www.npmjs.com/package/getconfig for info on how to override the default config for
@@ -182,7 +183,7 @@ class Minty {
      * @returns
      */
     async bulkMint(options) {
-        const { metadataDir, mdCid } = options;
+        const { metadataDir, mdCid, owner } = options;
 
         const files = await fs.readdir(metadataDir);
 
@@ -194,17 +195,25 @@ class Minty {
 
         let ids = [];
 
+        let failed = [];
+
         for (const f of files) {
             if (!f.includes("metadata")) {
-                const id = await this.mintToken(
-                    ownerAddress,
-                    `ipfs://${mdCid}/${f}`
-                );
+                let id;
+                try {
+                    id = await this.mintToken(
+                        ownerAddress,
+                        `ipfs://${mdCid}/${f}`
+                    );
+                } catch (err) {
+                    console.log(err);
+                    failed.push(f);
+                }
                 ids.push(id);
             }
         }
 
-        return { ids, metadataDir, mdCid };
+        return { failed, ids, metadataDir, mdCid };
     }
 
     /**
@@ -365,10 +374,11 @@ class Minty {
             contractTemplate === "PreMinty" ||
             contractTemplate === "OpenMinty"
         ) {
-            console.log("OpenMinty || PreMinty Template Found", {
+            console.log("Minting: ", {
                 metadataURI,
+                ownerAddress,
             });
-            tx = await this.contract.mintToken(metadataURI);
+            tx = await this.contract.mintToken(ownerAddress, metadataURI);
         }
 
         // The OpenZeppelin base ERC721 contract emits a Transfer event when a token is issued.
@@ -380,6 +390,7 @@ class Minty {
                 console.log("ignoring unknown event type ", event.event);
                 continue;
             }
+            // listOpenseaFixed();
             return event.args.tokenId.toString();
         }
 
