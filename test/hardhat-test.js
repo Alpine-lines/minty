@@ -2,21 +2,16 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const { default: Web3 } = require("web3");
 
-let preMinty;
-let preMintyFactory;
-let deployer;
-let other;
-
-const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
-
 describe("PreMinty", function () {
     let PreMinty;
     let preMinty;
     let deployer;
     let other;
 
+    const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+
     beforeEach(async function () {
-        [deployer, other] = await ethers.getSigners();
+        [deployer, minter, admin, customer, other] = await ethers.getSigners();
 
         const mockProxyFactory = await ethers.getContractFactory(
             "MockProxyRegistry",
@@ -30,6 +25,8 @@ describe("PreMinty", function () {
         preMinty = await PreMinty.deploy(
             "PreMinty!",
             "PMNT",
+            [minter],
+            [admin],
             "http://bafybeifz7tu5nxbi4fm4gh2skuwhxbmgn4wmmnyfat3cvu4alsl63l2bbe.ipfs.localhost:8080/metadata.json",
             11000,
             mockProxy.address
