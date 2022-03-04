@@ -1,10 +1,11 @@
 const opensea = require("opensea-js");
 const OpenSeaPort = opensea.OpenSeaPort;
 const Network = opensea.Network;
-const MnemonicWalletSubprovider =
-    require("@0x/subproviders").MnemonicWalletSubprovider;
-const RPCSubprovider = require("web3-provider-engine/subproviders/rpc");
-const Web3ProviderEngine = require("web3-provider-engine");
+// const MnemonicWalletSubprovider =
+//     require("@0x/subproviders").MnemonicWalletSubprovider;
+// const RPCSubprovider = require("web3-provider-engine/subproviders/rpc");
+// const Web3ProviderEngine = require("web3-provider-engine");
+// TODO Replace web3-provider-engine
 
 const MNEMONIC = process.env.MNEMONIC;
 const NODE_API_KEY = process.env.INFURA_KEY || process.env.ALCHEMY_KEY;
@@ -37,22 +38,22 @@ if (!FACTORY_CONTRACT_ADDRESS) {
 
 const BASE_DERIVATION_PATH = `44'/60'/0'/0`;
 
-const mnemonicWalletSubprovider = new MnemonicWalletSubprovider({
-    mnemonic: MNEMONIC,
-    baseDerivationPath: BASE_DERIVATION_PATH,
-});
-const network =
-    NETWORK === "mainnet" || NETWORK === "live" ? "mainnet" : "rinkeby";
-const infuraRpcSubprovider = new RPCSubprovider({
-    rpcUrl: isInfura
-        ? "https://" + network + ".infura.io/v3/" + NODE_API_KEY
-        : "https://eth-" + network + ".alchemyapi.io/v2/" + NODE_API_KEY,
-});
+// const mnemonicWalletSubprovider = new MnemonicWalletSubprovider({
+//     mnemonic: MNEMONIC,
+//     baseDerivationPath: BASE_DERIVATION_PATH,
+// });
+// const network =
+//     NETWORK === "mainnet" || NETWORK === "live" ? "mainnet" : "rinkeby";
+// const infuraRpcSubprovider = new RPCSubprovider({
+//     rpcUrl: isInfura
+//         ? "https://" + network + ".infura.io/v3/" + NODE_API_KEY
+//         : "https://eth-" + network + ".alchemyapi.io/v2/" + NODE_API_KEY,
+// });
 
-const providerEngine = new Web3ProviderEngine();
-providerEngine.addProvider(mnemonicWalletSubprovider);
-providerEngine.addProvider(infuraRpcSubprovider);
-providerEngine.start();
+// const providerEngine = new Web3ProviderEngine();
+// providerEngine.addProvider(mnemonicWalletSubprovider);
+// providerEngine.addProvider(infuraRpcSubprovider);
+// providerEngine.start();
 
 const seaport = new OpenSeaPort(
     providerEngine,

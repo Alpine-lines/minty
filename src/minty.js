@@ -1,4 +1,4 @@
-const fs = require("fs/promises");
+const fs = require("fs");
 const path = require("path");
 const spawn = require("child_process").spawnSync;
 const CID = require("cids");
@@ -167,7 +167,7 @@ class Minty {
      * @returns {Promise<CreateNFTResult>}
      **/
     async createNFTFromAssetFile(filename, options) {
-        const content = await fs.readFile(filename);
+        const content = fs.readFileSync(filename);
         return this.createNFTFromAssetData(content, {
             ...options,
             path: filename,
@@ -185,7 +185,7 @@ class Minty {
     async bulkMint(options) {
         const { metadataDir, mdCid, owner } = options;
 
-        const files = await fs.readdir(metadataDir);
+        const files = fs.readdirSync(metadataDir);
 
         // get the address of the token owner from options, or use the default signing address if no owner is given
         let ownerAddress = options.owner;
@@ -374,27 +374,48 @@ class Minty {
             contractTemplate === "PreMinty" ||
             contractTemplate === "OpenMinty"
         ) {
-            console.log("Minting: ", {
-                metadataURI,
-                ownerAddress,
+            tx = await new Promise(async (resolve, reject) => {
+                setTimeout(async () => resolve({}), 90000);
+                if (metadataURI.split("/")[-1] !== "json") {
+                    try {
+                        console.log("Minting: ", {
+                            metadataURI,
+                            ownerAddress,
+                        });
+                        const tx0 = await this.contract.mintToken(
+                            ownerAddress,
+                            metadataURI
+                        );
+                        console.log("tx sent");
+                        resolve(tx0);
+                        clearTimeout();
+                    } catch (err) {
+                        console.log(err);
+                        reject(err);
+                    }
+                } else {
+                    resolve({});
+                }
             });
-            tx = await this.contract.mintToken(ownerAddress, metadataURI);
         }
 
         // The OpenZeppelin base ERC721 contract emits a Transfer event when a token is issued.
         // tx.wait() will wait until a block containing our transaction has been mined and confirmed.
         // The transaction receipt contains events emitted while processing the transaction.
-        const receipt = await tx.wait();
-        for (const event of receipt.events) {
-            if (event.event !== "Transfer") {
-                console.log("ignoring unknown event type ", event.event);
-                continue;
+        try {
+            const receipt = await tx.wait();
+            for (const event of receipt.events) {
+                if (event.event !== "Transfer") {
+                    console.log("ignoring unknown event type ", event.event);
+                    continue;
+                }
+                // listOpenseaFixed();
+                console.log(event.args);
+                return event.args.tokenId.toString();
             }
-            // listOpenseaFixed();
-            return event.args.tokenId.toString();
-        }
 
-        throw new Error("unable to get token id");
+            console.log(new Error("unable to get token id"));
+        } catch (err) {}
     }
 
     async transferToken(tokenId, toAddress) {

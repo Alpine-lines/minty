@@ -1,4 +1,4 @@
-const fs = require("fs/promises");
+const fs = require("fs");
 const path = require("path");
 const { F_OK } = require("fs");
 const CID = require("cids");
@@ -43,7 +43,7 @@ async function deployContract(options) {
 
     if (image) {
         // fetch image content
-        const content = await fs.readFile(image);
+        const content = fs.readFileSync(image);
 
         // add the asset to IPFS
         const imagePath = image || "asset.bin";
@@ -215,7 +215,7 @@ async function loadDeploymentInfo() {
         );
         deploymentConfigFile = "minty-deployment.json";
     }
-    const content = await fs.readFile(deploymentConfigFile, {
+    const content = fs.readFileSync(deploymentConfigFile, {
         encoding: "utf8",
     });
     deployInfo = JSON.parse(content);

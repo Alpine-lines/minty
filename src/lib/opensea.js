@@ -7,7 +7,7 @@ const MnemonicWalletSubprovider =
 const RPCSubprovider = require("web3-provider-engine/subproviders/rpc");
 const Web3ProviderEngine = require("web3-provider-engine");
 
-const wallet = require("../.wallet.json");
+const wallet = require("../../.wallet.json");
 
 const MNEMONIC = wallet.MNEMONIC;
 const NODE_API_KEY = wallet.NODE_API_KEY || wallet.ALCHEMY_KEY;
@@ -62,11 +62,15 @@ const seaport = new OpenSeaPort(
     (arg) => console.log(arg)
 );
 
-async function listOpenseaFixed(tokenId = 1, startPrice = 0.1, expirationTime) {
+async function listOpenseaFixed(
+    tokenId = 1,
+    startPrice = 0.1,
+    durationDays = 31
+) {
     // Example: simple fixed-price sale of an item owned by a user.
     expirationTime = expirationTime
         ? expirationTime
-        : Math.round(Date.now() / 1000 + 60 * 60 * 24);
+        : Math.round(Date.now() / 1000 + 60 * 60 * 24 * durationDays);
     console.log(`Auctioning an item for a fixed price... ${expirationTime}`);
     const fixedPriceSellOrder = await seaport.createSellOrder({
         asset: {
@@ -83,11 +87,15 @@ async function listOpenseaFixed(tokenId = 1, startPrice = 0.1, expirationTime) {
     );
 }
 
-async function listOpenseaDutch(tokenId = 1, startPrice = 0.1, expirationTime) {
+async function listOpenseaDutch(
+    tokenId = 1,
+    startPrice = 0.1,
+    durationDays = 31
+) {
     // // Example: Dutch auction.
     expirationTime = expirationTime
         ? expirationTime
-        : Math.round(Date.now() / 1000 + 60 * 60 * 24);
+        : Math.round(Date.now() / 1000 + 60 * 60 * 24 * durationDays);
     console.log(`Dutch auctioning an item...${expirationTime}`);
     const dutchAuctionSellOrder = await seaport.createSellOrder({
         asset: {
@@ -108,12 +116,12 @@ async function listOpenseaDutch(tokenId = 1, startPrice = 0.1, expirationTime) {
 async function listOpenseaEnglish(
     tokenId = 1,
     startPrice = 0.1,
-    expirationTime
+    durationDays = 31
 ) {
     // Example: English auction.
     expirationTime = expirationTime
         ? expirationTime
-        : Math.round(Date.now() / 1000 + 60 * 60 * 24 * 7);
+        : Math.round(Date.now() / 1000 + 60 * 60 * 24 * durationDays);
     console.log(`English auctioning an item in DAI...${expirationTime}`);
     const wethAddress =
         NETWORK === "mainnet" || NETWORK === "live"
@@ -137,7 +145,7 @@ async function listOpenseaEnglish(
 }
 
 // for (let i = 1; i++; i < 1100) {
-//     listOpenseaFixed(i);
+// listOpenseaFixed(i, 0.01);
 // }
 
 module.exports = [listOpenseaFixed, listOpenseaDutch, listOpenseaEnglish];

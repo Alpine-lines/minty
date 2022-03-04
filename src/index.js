@@ -3,7 +3,7 @@
 // This file contains the main entry point for the command line `minty` app, and the command line option parsing code.
 // See minty.js for the core functionality.
 
-const fs = require("fs/promises");
+// const fs = require("fs/promises");
 const path = require("path");
 const { Command } = require("commander");
 const inquirer = require("inquirer");
@@ -106,6 +106,25 @@ async function main() {
             '"pin" the data for an NFT to a remote IPFS Pinning Service'
         )
         .action(pinNFTData);
+
+    // program
+    //     .command("initiate-sale")
+    //     .description(
+    //         "initiate opensea sale of type Fixed Price (DEFAULT), English Auction, or Dutch Auction"
+    //     )
+    //     .option(
+    //         "-p, --price <price>",
+    //         "Sell price (starting if either English or Dutch auction"
+    //     )
+    //     .option(
+    //         "-d, --duration <duration>",
+    //         "Sell order duration (in # of days"
+    //     )
+    //     .option("-a, --all <all>", "Create sell order for all tokens")
+    //     .option("-i, --id <id>", "Create sell order for one token by ID")
+    //     .option("-d, --dutch <dutch>", "Create dutch auction")
+    //     .option("-e, --english <english>", "Create english auction")
+    //     .action(initiateSale);
 
     program
         .command("deploy")
@@ -289,6 +308,12 @@ async function pinNFTData(tokenId) {
     const { assetURI, metadataURI } = await minty.pinTokenData(tokenId);
     console.log(`🌿 Pinned all data for token id ${chalk.green(tokenId)}`);
 }
+
+// async function initiateSale(tokenId) {
+//     const minty = await MakeMinty();
+//     const { assetURI, metadataURI } = await minty.pinTokenData(tokenId);
+//     console.log(`🌿 Pinned all data for token id ${chalk.green(tokenId)}`);
+// }
 
 async function deploy(options) {
     const answers = await promptForMissing(

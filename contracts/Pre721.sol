@@ -11,6 +11,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 // import "@openzeppelin/contracts/utils/Strings.sol";
 import "./modules/common/meta-transactions/ContentMixin.sol";
 import "./modules/common/meta-transactions/NativeMetaTransaction.sol";
+import "@openzeppelin/contracts/access/Roles.sol";
 
 contract OwnableDelegateProxy {}
 
@@ -23,6 +24,12 @@ contract ProxyRegistry {
 
 abstract contract Pre721 is ERC721, ContextMixin, NativeMetaTransaction, Ownable {
     using SafeMath for uint256;
+
+    using Roles for Roles.Role;
+
+    Roles.Role private _minters;
+    Roles.Role private _admins;
+
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
 
@@ -35,37 +42,54 @@ abstract contract Pre721 is ERC721, ContextMixin, NativeMetaTransaction, Ownable
     constructor(
         string memory _name, 
         string memory _symbol, 
+        address[] memory minters, 
+        address[] memory admins,
         string memory _contractURI, 
         uint256 _maxSupply,
         address _proxyRegistryAddress
     ) ERC721(_name, _symbol) {
-        console.log(_name, _symbol, _proxyRegistryAddress, _contractURI);
-        proxyRegistryAddress = _proxyRegistryAddress;
+        // console.log(_name, _symbol, _proxyRegistryAddress, _contractURI);
+
+        for (uint256 i = 0; i < minters.length; ++i) {
+            _minters.add(minters[i]);
+        }
+
+        for (uint256 i = 0; i < burners.length; ++i) {
+            _burners.add(burners[i]);
+        }
+
         CONTRACT_URI = _contractURI;
         MAX_SUPPLY = _maxSupply;
+
+        proxyRegistryAddress = _proxyRegistryAddress;
+
         _initializeEIP712(_name);
     }
 
-    event PermanentURI(string _value, uint256 indexed _id); 
+    // event PermanentURI(string _value, uint256 indexed _id); 
     
     function totalSupply() public view returns (uint256) {
-        console.log(_tokenIds.current());
+        // console.log(_tokenIds.current());
         return _tokenIds.current();
     }
+    function setTokenURI(uint256 tokenId, string memory _tokenURI) public override onlyOwner {
+        require(_admins.has(msg.sender), "DOES_NOT_HAVE_ADMIN_ROLE");
+        _setTokenURI(tokenId, _tokenURI);
+    }
 
-    function _setTokenURI(uint256 tokenId, string memory _tokenURI) private {
-        console.log(tokenId, _tokenURI);
-        _tokenURIs[tokenId] = _tokenURI;
+    function setMaxSupply(uint256 _maxSupply) public onlyOwner {
+        require(_admins.has(msg.sender), "DOES_NOT_HAVE_ADMIN_ROLE");
+        MAX_SUPPLY = _maxSupply;
     }
 
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
-        console.log(_tokenURIs[tokenId]);
+        // console.log(_tokenURIs[tokenId]);
         return _tokenURIs[tokenId];
     }
 
     function contractURI() public view returns (string memory) {
-        console.log(1);
-        console.log(CONTRACT_URI);
+        // console.log(1);
+        // console.log(CONTRACT_URI);
         return CONTRACT_URI;
     }
 
@@ -74,6 +98,7 @@ abstract contract Pre721 is ERC721, ContextMixin, NativeMetaTransaction, Ownable
         onlyOwner 
     returns (uint256)
     {
+        require(_minters.has(msg.sender), "DOES_NOT_HAVE_MINTER_ROLE");
         require(_tokenIds.current() < MAX_SUPPLY, "Maximum token supply already met!");
         _tokenIds.increment();
         uint256 id = _tokenIds.current();
@@ -81,9 +106,14 @@ abstract contract Pre721 is ERC721, ContextMixin, NativeMetaTransaction, Ownable
         _safeMint(_to, id);
 
         _setTokenURI(id, metadataURI);
-        emit PermanentURI(metadataURI, id); 
+        // emit PermanentURI(metadataURI, id); 
         
         return id;
+    }
+
+    function burn(uint256 tokenId) public override onlyOwner {
+        require(_admins.has(msg.sender), "DOES_NOT_HAVE_ADMIN_ROLE");
+        _burn(_id)
     }
 
     /**
@@ -114,4 +144,11 @@ abstract contract Pre721 is ERC721, ContextMixin, NativeMetaTransaction, Ownable
     {
         return ContextMixin.msgSender();
     }
+
+    function _setTokenURI(uint256 tokenId, string memory _tokenURI) private virtual {
+        // console.log(tokenId, _tokenURI);
+        _tokenURIs[tokenId] = _tokenURI;
+    }
+    
+
 }
