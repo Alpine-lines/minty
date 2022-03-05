@@ -12,9 +12,9 @@ module.exports = {
     defaultNetwork: "matic",
     networks: {
         hardhat: {},
-        // localhost: {
-        //     url: "http://localhost:8545/",
-        // },
+        localhost: {
+            url: "http://localhost:8545/",
+        },
         mumbai: {
             url: "https://rpc-mumbai.maticvigil.com",
             accounts: [secrets.privateKey],

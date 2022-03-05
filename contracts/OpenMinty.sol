@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.3;
 
-import "./Open721.sol";
+import "./common/presets/Open721.sol";
 
 /**
  * @title Creature

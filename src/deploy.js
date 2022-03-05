@@ -6,8 +6,6 @@ const ipfsClient = require("ipfs-http-client");
 const inquirer = require("inquirer");
 const { BigNumber } = require("ethers");
 
-// const CONTRACT_NAME = "Minty";
-
 // The getconfig package loads configuration from files located in the the `config` directory.
 // See https://www.npmjs.com/package/getconfig for info on how to override the default config for
 // different environments (e.g. testnet, mainnet, staging, production, etc).
@@ -31,8 +29,8 @@ async function deployContract(options) {
         symbol = file.symbol;
         description = file.description;
         imageIpfs = file.image;
-        fee = file.seller_fee_basis_points;
-        recipient = file.recipient_address;
+        recipient_address = file.recipient_address;
+        seller_fee_basis_points = file.seller_fee_basis_points;
     }
 
     const hardhat = require("hardhat");
@@ -55,7 +53,6 @@ async function deployContract(options) {
         // 'ipfs://QmaNZ2FCgvBPqnxtkbToVVbK2Nes6xk5K4Ns6BsmkPucAM/cat-pic.png' instead of
         // 'ipfs://QmaNZ2FCgvBPqnxtkbToVVbK2Nes6xk5K4Ns6BsmkPucAM'
         const ipfsPath = "/contract/" + basename;
-        // const ipfsPath = basename;
         const { cid: imageCid } = await ipfs.add(
             { path: ipfsPath, content },
             ipfsAddOptions
@@ -79,39 +76,42 @@ async function deployContract(options) {
     let proxyRegistryAddress = "";
     let mockProxy;
 
-    if (network === "localhost" && contract !== "Minty") {
-        const signers = await hardhat.ethers.getSigners();
+    if (contract !== "Minty") {
+        if (network === "localhost") {
+            const signers = await hardhat.ethers.getSigners();
 
-        const MockProxy = await hardhat.ethers.getContractFactory(
-            "MockProxyRegistry"
-        );
-        mockProxy = await MockProxy.deploy();
+            const MockProxy = await hardhat.ethers.getContractFactory(
+                "MockProxyRegistry"
+            );
+            mockProxy = await MockProxy.deploy();
 
-        await mockProxy.deployed();
-        // console.log(signers, signers[0]);
-        await mockProxy.setProxy(signers[0].address, signers[9].address);
-    } else if (network === "rinkeby") {
-        proxyRegistryAddress = "0xf57b2c51ded3a29e6891aba85459d600256cf317";
-    } else {
-        proxyRegistryAddress = "0xa5409ec958c83c3f309868babaca7c86dcb077c1";
+            await mockProxy.deployed();
+            // console.log(signers, signers[0]);
+            await mockProxy.setProxy(signers[0].address, signers[9].address);
+        } else if (network === "mumbai") {
+            proxyRegistryAddress = "0xf57b2c51ded3a29e6891aba85459d600256cf317";
+        } else {
+            proxyRegistryAddress = "0xa5409ec958c83c3f309868babaca7c86dcb077c1";
+        }
     }
 
     console.log(
         `deploying contract for token ${name} (${symbol}) to network "${network}". You can now view contract metadata at ${metadataGatewayURL} ...`
     );
-    const Minty = await hardhat.ethers.getContractFactory(contract);
-    let minty;
+    const Contract = await hardhat.ethers.getContractFactory(contract);
+    let contractInstance;
 
     if (contract === "Minty") {
-        minty = await Minty.deploy(name, symbol, metadataURI);
+        contractInstance = await Contract.deploy(name, symbol, metadataURI);
     } else if (contract === "PreMinty" || contract === "OpenMinty") {
-        minty = await Minty.deploy(
+        contractInstance = await Contract.deploy(
             name,
             symbol,
+            minters,
+            admins,
             metadataURI,
             11000,
-            "0xa5409ec958c83c3f309868babaca7c86dcb077c1"
-            // mockProxy.address ? mockProxy.address : proxyRegistryAddress
+            mockProxy.address ? mockProxy.address : proxyRegistryAddress
         );
     }
 
@@ -124,46 +124,43 @@ async function deployContract(options) {
 }
 
 function makeContractMetadata(assetURI, options) {
-    const {
-        name,
-        description,
-        symbol,
-        external_url,
-        seller_fee_basis_points,
-        fee_recipient,
-        metadata,
-        file,
-    } = options;
+    // const {
+    //     name,
+    //     description,
+    //     symbol,
+    //     external_url,
+    //     seller_fee_basis_points,
+    //     fee_recipient,
+    //     metadata,
+    //     file,
+    // } = options;
 
-    let md;
+    // if (file) {
+    //     md = {
+    //         ...JSON.parse(metadata),
+    //     };
+    // } else if (metadata) {
+    //     md = {
+    //         ...JSON.parse(metadata),
+    //     };
+    // } else {
+    //     md = {
+    //         name,
+    //         description,
+    //         symbol,
+    //         external_url,
+    //         seller_fee_basis_points,
+    //         fee_recipient,
+    //         metadata,
+    //         file,
+    //     };
+    // }
 
-    if (!metadata) {
-        if (!file) {
-            md = {
-                name,
-                description,
-                image: assetURI,
-                symbol,
-                external_url,
-                seller_fee_basis_points,
-                fee_recipient,
-                metadata,
-                file,
-            };
-        } else {
-            md = {
-                ...require(file),
-                image: assetURI,
-            };
-        }
-    } else {
-        md = {
-            ...JSON.parse(metadata),
-            image: assetURI,
-        };
-    }
-
-    return md;
+    return options.file
+        ? { ...JSON.parse(options.file), image: assetURI }
+        : options.metadata
+        ? { ...JSON.parse(options.metadata), image: assetURI }
+        : { ...options, image: assetURI };
 }
 
 function deploymentInfo(hardhat, minty, contract, metadataURI) {

@@ -12,6 +12,15 @@ const Hash = require("ipfs-only-hash");
 const { loadDeploymentInfo } = require("./deploy");
 // const { listOpenseaFixed } = require("./sell-opensea");
 
+/**
+ * TODO: add async ipfsFormatFileArray(dir) { const files = await fs.readdir(dir); return map(f => { path: f.name, content: f }); }
+ * TODO: add parseMetadata(imgCID, mdDir) { // code available in ../scripts/updateMetadata.js }
+ * TODO: add async makeBatchNFTMetadata(imgDir, mdDir) { await all(ipfs.addAll(ipfsFormatFileArray(imgDir))); parseNFTMetadataJSON(imgCID, mdDir); const mdURI = await all(ipfs.addAll(ipfsFormatFileArray(mdDir))); return mdURI; }
+ * TODO: migrate from IPFS CIDs to IPNS or DNSLink for tokenURIs
+ * TODO: add ERC721A contract boilerplate
+ * TODO: add ERC721CS extension (Alpine-lines/ERC721CS) for ERC721A
+ */
+
 // The getconfig package loads configuration from files located in the the `config` directory.
 // See https://www.npmjs.com/package/getconfig for info on how to override the default config for
 // different environments (e.g. testnet, mainnet, staging, production, etc).
@@ -522,6 +531,61 @@ class Minty {
     async getIPFSJSON(cidOrURI) {
         const str = await this.getIPFSString(cidOrURI);
         return JSON.parse(str);
+    }
+
+    /**
+     * Get the contents of the IPFS object identified by the given CID or URI, and parse it as JSON, returning the parsed object.
+     *
+     * @param {string} imdDir - NFT collection image directory
+     * @param {string} mdDir - NFT collection metadata JSON directory
+     * @returns {Promise<string>} - IPFS CID string or `ipfs://<cid>` style URI
+     */
+    async makeBatchNFTMetadata(imgDir, mdDir) {
+        const imgCID = await all(ipfs.addAll(ipfsFormatFileArray(imgDir)));
+        parseCollectionMetadata(imgCID, mdDir);
+        const mdURI = await all(ipfs.addAll(ipfsFormatFileArray(mdDir)));
+        return mdURI;
+    }
+
+    async parseMetadata(file, cid, metadata) {
+        const { externalUrl, sellerFee, feeRecipient } = metadata;
+
+        const imgURI = `ipfs://${cid}/${file.split(".")[0]}.png`;
+        const data = fs.readFileSync(file);
+        const parsedData = JSON.parse(data);
+
+        parsedData.image = imgURI;
+
+        if (externalUrl) {
+            parsedData.external_url = externalUrl;
+        }
+        if (sellerFee) {
+            parsedData.seller_fee_basis_points = sellerFee;
+        }
+        if (feeRecipient) {
+            parsedData.fee_recipient = feeRecipient;
+        }
+
+        // console.log(parsedData);
+        fs.writeFileSync(filePath, JSON.stringify(parsedData));
+        console.log("Wrote image: " + uri + " to " + filePath);
+    }
+
+    async parseCollectionMetadata(dir, cid, metadata) {
+        const files = fs.readdirSync(dir);
+        for (const file of files) {
+            parseMetadata(`${dir}/${file}`, cid, metadata);
+        }
+    }
+
+    async ipfsFormatFileArray(dir) {
+        const files = fs.readdirSync(dir);
+        return files.map((f) => {
+            return {
+                path: f.name,
+                content: f,
+            };
+        });
     }
 
     //////////////////////////////////////////////

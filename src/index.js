@@ -66,7 +66,7 @@ async function main() {
         .action(createNFT);
 
     program
-        .command("mint-bulk")
+        .command("batchMint")
         .description(
             "bulk mint n NFTs and upload n images and metadata.json objects to IPFS w/ optional pinning service."
         )
@@ -84,7 +84,7 @@ async function main() {
         )
         .option("-d, --mdCid <mdCid>", "Address where new tokens will be sent.")
         .option("-o, --owner <owner>", "Address where new tokens will be sent.")
-        .action(mintBulk);
+        .action(batchMint);
 
     program
         .command("show <token-id>")
@@ -252,7 +252,7 @@ async function createNFT(imagePath, options) {
     console.log(colorize(JSON.stringify(nft.metadata), colorizeOptions));
 }
 
-async function mintBulk(options) {
+async function batchMint(options) {
     const minty = await MakeMinty();
 
     const { failed, ids, metadataDir, mdCid } = await minty.bulkMint(options);

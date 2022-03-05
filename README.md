@@ -201,6 +201,5 @@ The `pin` command looks for some configuration info to connect to the remote pin
 # TODO
 
 TODO: Add express api boilerplate for exposing minty.createNFTFromAssetFile, deploy.deployContract, minty.getTokenData, minty.transferToken, and minty.pinTokenData.
-TODO: Write tests for hardhat contracts.
 TODO: write tests for CLI functionality and/or boilerplate API project.
 TODO: add command to setup new instance of API boilerplate.

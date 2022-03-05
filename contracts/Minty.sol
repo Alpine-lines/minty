@@ -4,9 +4,9 @@ pragma solidity ^0.8.3;
 // import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
-import "./modules/minting/OpenMint.sol";
-import "./modules/uri/TokenURI.sol";
-import "./modules/uri/ContractURI.sol";
+import "./common/minting/OpenMint.sol";
+import "./common/uri/TokenURI.sol";
+import "./common/uri/ContractURI.sol";
 
 contract Minty is ERC721, OpenMint, ContractURI, TokenURI {
     constructor(string memory tokenName, string memory symbol, string memory _contractURI) 

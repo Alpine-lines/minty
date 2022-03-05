@@ -16,34 +16,34 @@ Installation of Minty is fairly simple. Just download the GitHub repository, ins
 
 1. Clone this repository and move into the `minty` directory:
 
-   ```shell
-   git clone https://github.com/yusefnapora/minty
-   cd minty
-   ```
+    ```shell
+    git clone https://github.com/Alpine-lines/minty-cli
+    cd minty
+    ```
 
 1. Install the NPM dependencies:
 
-   ```shell
-   npm install
-   ```
+    ```shell
+    yarn install
+    ```
 
 1. Add the `minty` command to your `$PATH`. This makes it easier to run Minty from anywhere on your computer:
 
-   ```shell
-   npm link
-   ```
+    ```shell
+    yarn link
+    ```
 
 1. Run the `start-local-environment.sh` script to start the local Ethereum testnet and IPFS daemon:
 
-   ```shell
-   ./start-local-environment.sh
+    ```shell
+    ./start-local-environment.sh
 
-   > Compiling smart contract
-   > Compiling 16 files with 0.7.3
-   > ...
-   ```
+    > Compiling smart contract
+    > Compiling 16 files with 0.7.3
+    > ...
+    ```
 
-   This command continues to run. All further commands must be entered in another terminal window.
+    This command continues to run. All further commands must be entered in another terminal window.
 
 ## Deploy the contract
 
@@ -76,9 +76,9 @@ First, let's create something to mint. NFTs have a huge range of use-cases, so w
 
 1. Create a file called `flight-to-the-moon.json`:
 
-   ```shell
-   touch ~/flight-to-the-moon.json
-   ```
+    ```shell
+    touch ~/flight-to-the-moon.json
+    ```
 
 2. Open the file and enter some flight information:
 
@@ -142,22 +142,22 @@ Now that we've got our ticket, we can mint it.
 
 1. Call the `mint` command and supply the file we want to mint, the name of our NFT, and a description:
 
-   ```shell
-   minty mint ~/pictures/profile.jpg --file ~/flight-to-the-moon.json
+    ```shell
+    minty mint ~/pictures/profile.jpg --file ~/flight-to-the-moon.json
 
-   > 🌿 Minted a new NFT:
-   > Token ID:              1
-   > Metadata URI:          ipfs://Qma4RRDu9Q5ZXb4F6HSPAHXeyinYYFuBMTrk7HbHrsbcN9/metadata.json
-   > Metadata Gateway URL:  http://localhost:8080/ipfs/Qma4RRDu9Q5ZXb4F6HSPAHXeyinYYFuBMTrk7HbHrsbcN9/metadata.json
-   > Asset URI:             ipfs://QmbwYvCrjnv9nKqagwYoniNzppf96za7BnateWD18mQnHX/flight-to-the-moon.txt
-   > Asset Gateway URL:     http://localhost:8080/ipfs/QmbwYvCrjnv9nKqagwYoniNzppf96za7BnateWD18mQnHX/flight-to-the-moon.txt
-   > NFT Metadata:
-   > {
-   >   "name": "Moon Flight #1",
-   >   "description": "This ticket serves are proof-of-ownership of a first-class seat on a flight to the moon.",
-   >   "image": "ipfs://QmbwYvCrjnv9nKqagwYoniNzppf96za7BnateWD18mQnHX/flight-to-the-moon.txt"
-   > }
-   ```
+    > 🌿 Minted a new NFT:
+    > Token ID:              1
+    > Metadata URI:          ipfs://Qma4RRDu9Q5ZXb4F6HSPAHXeyinYYFuBMTrk7HbHrsbcN9/metadata.json
+    > Metadata Gateway URL:  http://localhost:8080/ipfs/Qma4RRDu9Q5ZXb4F6HSPAHXeyinYYFuBMTrk7HbHrsbcN9/metadata.json
+    > Asset URI:             ipfs://QmbwYvCrjnv9nKqagwYoniNzppf96za7BnateWD18mQnHX/flight-to-the-moon.txt
+    > Asset Gateway URL:     http://localhost:8080/ipfs/QmbwYvCrjnv9nKqagwYoniNzppf96za7BnateWD18mQnHX/flight-to-the-moon.txt
+    > NFT Metadata:
+    > {
+    >   "name": "Moon Flight #1",
+    >   "description": "This ticket serves are proof-of-ownership of a first-class seat on a flight to the moon.",
+    >   "image": "ipfs://QmbwYvCrjnv9nKqagwYoniNzppf96za7BnateWD18mQnHX/flight-to-the-moon.txt"
+    > }
+    ```
 
 1. That it!
 
@@ -182,16 +182,16 @@ Your API key allows Minty to interact with your Pinata account automatically:
 1. Click **New Key**.
 1. Expand the **Pinning Services API** dropdown and select all the options under **Pins**:
 
-   ![The permissions options available to API keys in Pinata.](./images/pinata-api-key-permissions.png)
+    ![The permissions options available to API keys in Pinata.](./images/pinata-api-key-permissions.png)
 
 1. Pinata will give you an _API key_, and _API secret_, and a _JWT_:
 
-   ```
-   API Key: 43537d17e88805007086
-   API Secret: 492b24f041b9120cbf8e35a247fb686793231a3d89045f1046a4f5b2d2175082
-   JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySW5mb3JtYXRpb24iOnsiaWQiOiJiZDQ3NjM1Ny1lYWRhLTQ1ZDUtYTVmNS1mM2EwZjRmZGZmYmEiLCJlbWFpbCI6InRhaWxzbm93QHByb3Rvbm1haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsInBpbl9wb2xpY3kiOnsicmVnaW9ucyI6W3siaWQiOiJGUkExIiwiZGVzaXJlZFJlcGxpY2F0aW9uQ291bnQiOjF9XSwidmVyc2lvbiI6MX0sIm1mYV9lbmFibGVkIjpmYWxzZX0sImF1dGhlbnRpY2F0aW9uVHlwZSI6InNjb3BlZEtleSIsInNjb3BlZEtleUtleSI6IjQzNTM3ZDE3ZTg4ODA1MDA3MDg2Iiwic2NvcGVkS2V5U2VjcmV0IjoiNDkyYjI0ZjA0MWI5MTIwY2JmOGUzNWEyNDdmYjY4Njc5MzIzMWEzZDg5MDQ1ZjEwNDZhNGY1YjJkMjE3NTA4MiIsImlhdCI6MTYxNjAxMzExNX0.xDV9-cPwDIQInuiB0M--XiJ8dQwwDYMch4gJbc6ogXs
-   ```
+    ```
+    API Key: 43537d17e88805007086
+    API Secret: 492b24f041b9120cbf8e35a247fb686793231a3d89045f1046a4f5b2d2175082
+    JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySW5mb3JtYXRpb24iOnsiaWQiOiJiZDQ3NjM1Ny1lYWRhLTQ1ZDUtYTVmNS1mM2EwZjRmZGZmYmEiLCJlbWFpbCI6InRhaWxzbm93QHByb3Rvbm1haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsInBpbl9wb2xpY3kiOnsicmVnaW9ucyI6W3siaWQiOiJGUkExIiwiZGVzaXJlZFJlcGxpY2F0aW9uQ291bnQiOjF9XSwidmVyc2lvbiI6MX0sIm1mYV9lbmFibGVkIjpmYWxzZX0sImF1dGhlbnRpY2F0aW9uVHlwZSI6InNjb3BlZEtleSIsInNjb3BlZEtleUtleSI6IjQzNTM3ZDE3ZTg4ODA1MDA3MDg2Iiwic2NvcGVkS2V5U2VjcmV0IjoiNDkyYjI0ZjA0MWI5MTIwY2JmOGUzNWEyNDdmYjY4Njc5MzIzMWEzZDg5MDQ1ZjEwNDZhNGY1YjJkMjE3NTA4MiIsImlhdCI6MTYxNjAxMzExNX0.xDV9-cPwDIQInuiB0M--XiJ8dQwwDYMch4gJbc6ogXs
+    ```
 
-   We just need the `API Key` and `API Secret`. You can ignore the `JWT` for now.
+    We just need the `API Key` and `API Secret`. You can ignore the `JWT` for now.
 
 1.
