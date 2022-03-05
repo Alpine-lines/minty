@@ -9,8 +9,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 // import "@openzeppelin/contracts/utils/Strings.sol";
-import "./modules/common/meta-transactions/ContentMixin.sol";
-import "./modules/common/meta-transactions/NativeMetaTransaction.sol";
+import "../meta-transactions/ContentMixin.sol";
+import "../meta-transactions/NativeMetaTransaction.sol";
 
 contract OwnableDelegateProxy {}
 

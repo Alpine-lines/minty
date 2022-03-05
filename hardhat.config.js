@@ -9,7 +9,7 @@ const secrets = require("./.secrets.json");
  */
 module.exports = {
     solidity: "0.8.3",
-    defaultNetwork: "matic",
+    defaultNetwork: "localhost",
     networks: {
         hardhat: {},
         localhost: {

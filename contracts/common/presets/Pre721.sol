@@ -2,16 +2,13 @@
 pragma solidity ^0.8.3;
 
 import "hardhat/console.sol";
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-// import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
-// import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
-// import "@openzeppelin/contracts/utils/Strings.sol";
-import "./modules/common/meta-transactions/ContentMixin.sol";
-import "./modules/common/meta-transactions/NativeMetaTransaction.sol";
-import "@openzeppelin/contracts/access/Roles.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
+import "../meta-transactions/ContentMixin.sol";
+import "../meta-transactions/NativeMetaTransaction.sol";
 
 contract OwnableDelegateProxy {}
 
@@ -22,18 +19,16 @@ contract ProxyRegistry {
     mapping(address => OwnableDelegateProxy) public proxies;
 }
 
-abstract contract Pre721 is ERC721, ContextMixin, NativeMetaTransaction {
+abstract contract Pre721 is ContextMixin, NativeMetaTransaction, AccessControl, ERC721 {
     using SafeMath for uint256;
-
-    using Roles for Roles.Role;
-
-    Roles.Role private _minters;
-    Roles.Role private _admins;
 
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
 
+    bytes32 private constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
+
     address proxyRegistryAddress;
+
     string private CONTRACT_URI;
     uint256 private MAX_SUPPLY;
 
@@ -42,20 +37,15 @@ abstract contract Pre721 is ERC721, ContextMixin, NativeMetaTransaction {
     constructor(
         string memory _name, 
         string memory _symbol, 
-        address[] memory minters, 
-        address[] memory admins,
+        address[] memory _admins,
         string memory _contractURI, 
         uint256 _maxSupply,
         address _proxyRegistryAddress
     ) ERC721(_name, _symbol) {
-        // console.log(_name, _symbol, _proxyRegistryAddress, _contractURI);
-
-        for (uint256 i = 0; i < minters.length; ++i) {
-            _minters.add(minters[i]);
-        }
-
-        for (uint256 i = 0; i < burners.length; ++i) {
-            _burners.add(burners[i]);
+        _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
+        
+        for (uint256 i = 0; i < _admins.length; ++i) {
+            _setupRole(ADMIN_ROLE, _admins[i]);
         }
 
         CONTRACT_URI = _contractURI;
@@ -66,39 +56,38 @@ abstract contract Pre721 is ERC721, ContextMixin, NativeMetaTransaction {
         _initializeEIP712(_name);
     }
 
-    // event PermanentURI(string _value, uint256 indexed _id); 
-    
+    function supportsInterface(bytes4 interfaceId) public view override(ERC721, AccessControl) returns (bool) {
+        super.supportsInterface(interfaceId);
+    }
+
     function totalSupply() public view returns (uint256) {
-        // console.log(_tokenIds.current());
         return _tokenIds.current();
     }
-    function setTokenURI(uint256 tokenId, string memory _tokenURI) public override onlyOwner {
-        require(_admins.has(msg.sender), "DOES_NOT_HAVE_ADMIN_ROLE");
+    function setTokenURI(uint256 tokenId, string memory _tokenURI) public onlyRole(ADMIN_ROLE) {
+        // require(hasRole(ADMIN_ROLE, msg.sender), "Caller is not an admin");
         _setTokenURI(tokenId, _tokenURI);
     }
 
-    function setMaxSupply(uint256 _maxSupply) public onlyOwner {
-        require(_admins.has(msg.sender), "DOES_NOT_HAVE_ADMIN_ROLE");
+    function setMaxSupply(uint256 _maxSupply) public onlyRole(ADMIN_ROLE) {
+        // require(hasRole(ADMIN_ROLE, msg.sender), "Caller is not an admin");
         MAX_SUPPLY = _maxSupply;
     }
 
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
-        // console.log(_tokenURIs[tokenId]);
+        require(_exists(tokenId), "Token does not exist!");
         return _tokenURIs[tokenId];
     }
 
     function contractURI() public view returns (string memory) {
-        // console.log(1);
-        // console.log(CONTRACT_URI);
         return CONTRACT_URI;
     }
 
     function mintToken(address _to, string memory metadataURI)
         public
-        onlyOwner 
+        onlyRole(ADMIN_ROLE) 
     returns (uint256)
     {
-        require(_minters.has(msg.sender), "DOES_NOT_HAVE_MINTER_ROLE");
+        // require(hasRole(ADMIN_ROLE, msg.sender), "Caller is not an admin");
         require(_tokenIds.current() < MAX_SUPPLY, "Maximum token supply already met!");
         _tokenIds.increment();
         uint256 id = _tokenIds.current();
@@ -106,14 +95,13 @@ abstract contract Pre721 is ERC721, ContextMixin, NativeMetaTransaction {
         _safeMint(_to, id);
 
         _setTokenURI(id, metadataURI);
-        // emit PermanentURI(metadataURI, id); 
         
         return id;
     }
 
-    function burn(uint256 tokenId) public override onlyOwner {
-        require(_admins.has(msg.sender), "DOES_NOT_HAVE_ADMIN_ROLE");
-        _burn(_id)
+    function burn(uint256 tokenId) public onlyRole(ADMIN_ROLE) {
+        // require(hasRole(ADMIN_ROLE, msg.sender), "Caller is not an admin");
+        _burn(tokenId);
     }
 
     /**
@@ -145,8 +133,7 @@ abstract contract Pre721 is ERC721, ContextMixin, NativeMetaTransaction {
         return ContextMixin.msgSender();
     }
 
-    function _setTokenURI(uint256 tokenId, string memory _tokenURI) private virtual {
-        // console.log(tokenId, _tokenURI);
+    function _setTokenURI(uint256 tokenId, string memory _tokenURI) internal virtual {
         _tokenURIs[tokenId] = _tokenURI;
     }
     
