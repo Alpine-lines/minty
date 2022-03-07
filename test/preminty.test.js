@@ -38,7 +38,6 @@ describe("PreMinty", function () {
             11000,
             mockProxy.address
         );
-        // await preMinty.deployed();
     });
 
     // it("correctly checks all the supported interfaces", async function () {

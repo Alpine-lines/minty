@@ -17,6 +17,6 @@ contract PreMinty is Pre721 {
         uint256 _maxSupply,
         address _proxyRegistryAddress
     )
-        Pre721(_name, _symbol, _admins, _contractURI,_maxSupply, _proxyRegistryAddress)
+        Pre721(_name, _symbol, _admins, _contractURI, _maxSupply, _proxyRegistryAddress)
     {}
 }

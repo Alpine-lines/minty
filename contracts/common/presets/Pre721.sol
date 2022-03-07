@@ -1,14 +1,14 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.3;
 
-import "hardhat/console.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
+// import "hardhat/console.sol";
+// import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
 import "../meta-transactions/ContentMixin.sol";
 import "../meta-transactions/NativeMetaTransaction.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
 
 contract OwnableDelegateProxy {}
 
@@ -56,8 +56,9 @@ abstract contract Pre721 is ContextMixin, NativeMetaTransaction, AccessControl, 
         _initializeEIP712(_name);
     }
 
-    function supportsInterface(bytes4 interfaceId) public view override(ERC721, AccessControl) returns (bool) {
-        super.supportsInterface(interfaceId);
+    function supportsInterface(bytes4 interfaceId) public view override(ERC721, AccessControl) returns (bool interfaceSupported) {
+        interfaceSupported = super.supportsInterface(interfaceId);
+        return interfaceSupported;
     }
 
     function totalSupply() public view returns (uint256) {

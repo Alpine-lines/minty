@@ -17,8 +17,7 @@ describe("PreMinty", function () {
     const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
     beforeEach(async function () {
-        [deployer, minter, admin, customer, customer] =
-            await ethers.getSigners();
+        [deployer, minter, admin, customer] = await ethers.getSigners();
 
         const mockProxyFactory = await ethers.getContractFactory(
             "MockProxyRegistry",
@@ -39,7 +38,7 @@ describe("PreMinty", function () {
             mockProxy.address
         );
 
-        [deployer, minter, admin, customer] = await ethers.getSigners();
+        // [deployer, minter, admin, customer] = await ethers.getSigners();
 
         await preMinty.deployed();
     });

@@ -13,8 +13,9 @@ contract OpenMinty is Open721 {
         string memory _name, 
         string memory _symbol, 
         string memory _contractURI, 
+        uint256 _maxSupply,
         address _proxyRegistryAddress
     )
-        Open721(_name, _symbol, _contractURI, _proxyRegistryAddress)
+        Open721(_name, _symbol, _contractURI, _maxSupply, _proxyRegistryAddress)
     {}
 }
