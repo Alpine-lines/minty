@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.3;
+pragma solidity ^0.8.4;
 
 import "./common/presets/Open721.sol";
 
 /**
- * @title Creature
- * Creature - a contract for my non-fungible creatures.
+ * @title OpenMinty
  */
 contract OpenMinty is Open721 {
     constructor(

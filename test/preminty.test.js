@@ -232,7 +232,7 @@ describe("PreMinty", function () {
 
     // it("correctly safe transfers NFT from owner to smart contract that can receive NFTs", async function () {
     //     const tokenReceiverContract = await ethers.getContractFactory(
-    //         "preMintyReceiverTestMock"
+    //         "NftTokenReceiverTestMock"
     //     );
     //     const tokenReceiver = await tokenReceiverContract.deploy();
     //     await tokenReceiver.deployed();
@@ -241,7 +241,8 @@ describe("PreMinty", function () {
     //     await preMinty
     //         .connect(customer)
     //         ["safeTransferFrom(address,address,uint256)"](
-    //             customer.address uri1,
+    //             customer.address,
+    //             // uri1,
     //             tokenReceiver.address,
     //             id1
     //         );
@@ -252,7 +253,7 @@ describe("PreMinty", function () {
 
     // it("correctly safe transfers NFT from owner to smart contract that can receive NFTs with data", async function () {
     //     const tokenReceiverContract = await ethers.getContractFactory(
-    //         "preMintyReceiverTestMock"
+    //         "NftTokenReceiverTestMock"
     //     );
     //     const tokenReceiver = await tokenReceiverContract.deploy();
     //     await tokenReceiver.deployed();
@@ -262,7 +263,8 @@ describe("PreMinty", function () {
     //         await preMinty
     //             .connect(customer)
     //             ["safeTransferFrom(address,address,uint256,bytes)"](
-    //                 customer.address uri1,
+    //                 customer.address,
+    //                 // uri1,
     //                 tokenReceiver.address,
     //                 id1,
     //                 "0x01"
@@ -288,13 +290,18 @@ describe("PreMinty", function () {
         await expect(preMinty.connect(admin).burn(id1)).to.be.reverted;
     });
 
-    // it.only('safeTransfer does not call onERC721Received to constructing contract', async function() {
-    //   const sendsToSelfOnConstructContract = await ethers.getContractFactory('SendsToSelfOnConstruct');
-    //   const sendsToSelfOnConstruct = await sendsToSelfOnConstructContract.deploy();
-    //   expect(await sendsToSelfOnConstruct.deployed().deployTransaction).to.emit(sendsToSelfOnConstructContract, 'Transfer');
+    // it.only("safeTransfer does not call onERC721Received to constructing contract", async function () {
+    //     const sendsToSelfOnConstructContract = await ethers.getContractFactory(
+    //         "SendsToSelfOnConstruct"
+    //     );
+    //     const sendsToSelfOnConstruct =
+    //         await sendsToSelfOnConstructContract.deploy();
+    //     expect(
+    //         await sendsToSelfOnConstruct.deployed().deployTransaction
+    //     ).to.emit(sendsToSelfOnConstructContract, "Transfer");
 
-    //   console.log('here');
-    //   // console.log(log);
-    //   // console.log(sendsToSelfOnConstruct); No Receive event, 2x Transfer
+    //     console.log("here");
+    //     // console.log(log);
+    //     // console.log(sendsToSelfOnConstruct); No Receive event, 2x Transfer
     // });
 });

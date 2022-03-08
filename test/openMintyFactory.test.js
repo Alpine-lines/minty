@@ -1,7 +1,7 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
-const { setupTests } = require("../lib/setup.js");
+// const { setupTests } = require("../lib/setup.js");
 const testVals = require("../lib/testValuesCommon.js");
 const vals = require("../lib/valuesCommon.js");
 
@@ -52,6 +52,9 @@ describe("OpenMintyFactory", (accounts) => {
             3
         );
 
+        Bundle = await ethers.getContractFactory("OpenMintyBundle");
+        myBundle = Bundle.attach(await myFactory.bundleNftAddress());
+
         // Reentrancy = await ethers.getContractFactory("TestForReentrancyAttack");
         // attacker = await TestForReentrancyAttack.deploy();
         // await attacker.setFactoryAddress(myFactory.address);
@@ -65,9 +68,9 @@ describe("OpenMintyFactory", (accounts) => {
             expect(await myFactory.proxyRegistryAddress()).to.equal(
                 proxy.address
             );
-            // expect(await myFactory.bundleNftAddress()).to.equal(
-            //     myBundle.address
-            // );
+            expect(await myFactory.bundleNftAddress()).to.equal(
+                myBundle.address
+            );
         });
     });
 
