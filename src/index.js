@@ -68,7 +68,7 @@ async function main() {
     program
         .command("batchMint")
         .description(
-            "bulk mint n NFTs and upload n images and metadata.json objects to IPFS w/ optional pinning service."
+            "bulk mint n NFTs and upload n images and metadata.json objects to IPFS w/ optional pinning service"
         )
         .option(
             "-i, --imageDir <imageDir>",
@@ -255,7 +255,7 @@ async function createNFT(imagePath, options) {
 async function batchMint(options) {
     const minty = await MakeMinty();
 
-    const { failed, ids, metadataDir, mdCid } = await minty.bulkMint(options);
+    const { failed, ids, metadataDir, mdCid } = await minty.batchMint(options);
 
     const output = [];
 

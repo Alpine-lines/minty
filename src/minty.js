@@ -13,12 +13,9 @@ const { loadDeploymentInfo } = require("./deploy");
 // const { listOpenseaFixed } = require("./sell-opensea");
 
 /**
- * TODO: add async ipfsFormatFileArray(dir) { const files = await fs.readdir(dir); return map(f => { path: f.name, content: f }); }
- * TODO: add parseMetadata(imgCID, mdDir) { // code available in ../scripts/updateMetadata.js }
- * TODO: add async makeBatchNFTMetadata(imgDir, mdDir) { await all(ipfs.addAll(ipfsFormatFileArray(imgDir))); parseNFTMetadataJSON(imgCID, mdDir); const mdURI = await all(ipfs.addAll(ipfsFormatFileArray(mdDir))); return mdURI; }
+ * TODO: mintGate integration
  * TODO: migrate from IPFS CIDs to IPNS or DNSLink for tokenURIs
- * TODO: add ERC721A contract boilerplate
- * TODO: add ERC721CS extension (Alpine-lines/ERC721CS) for ERC721A
+ * TODO: add DeckBuilderNFT extension (Alpine-lines/ERC721CS) for ERC721A
  */
 
 // The getconfig package loads configuration from files located in the the `config` directory.
@@ -191,7 +188,7 @@ class Minty {
      * @param {?string} ownerAddress
      * @returns
      */
-    async bulkMint(options) {
+    async batchMint(options) {
         const { metadataDir, mdCid, owner } = options;
 
         const files = fs.readdirSync(metadataDir);
@@ -241,6 +238,36 @@ class Minty {
      * @returns {object} - NFT metadata object
      */
     async makeNFTMetadata(assetURI, options) {
+        // const {
+        //     metadata,
+        //     file,
+        //     name,
+        //     description,
+        //     attrs,
+        //     attributes,
+        //     exUrl,
+        //     bg,
+        //     animation,
+        //     video,
+        // } = file ? require(file) : metadata ? JSON.parse(metadata) : options;
+
+        // assetURI = ensureIpfsUriPrefix(assetURI);
+
+        // return {
+        //     name,
+        //     description,
+        //     attributes: attributes
+        //         ? attributes
+        //         : attrs
+        //         ? require(attrs).attributes
+        //         : [],
+        //     image: assetURI,
+        //     external_url: exUrl,
+        //     background_color: bg,
+        //     animation_url: animation,
+        //     video_url: video,
+        // };
+
         const {
             metadata,
             file,
@@ -282,6 +309,20 @@ class Minty {
             };
         }
         return md;
+    }
+
+    /**
+     * Get the contents of the IPFS object identified by the given CID or URI, and parse it as JSON, returning the parsed object.
+     *
+     * @param {string} imdDir - NFT collection image directory
+     * @param {string} mdDir - NFT collection metadata JSON directory
+     * @returns {Promise<string>} - IPFS CID string or `ipfs://<cid>` style URI
+     */
+    async makeBatchNFTMetadata(imgDir, mdDir) {
+        const imgCID = await all(ipfs.addAll(ipfsFormatFileArray(imgDir)));
+        parseCollectionMetadata(imgCID, mdDir);
+        const mdURI = await all(ipfs.addAll(ipfsFormatFileArray(mdDir)));
+        return mdURI;
     }
 
     //////////////////////////////////////////////
@@ -533,20 +574,6 @@ class Minty {
         return JSON.parse(str);
     }
 
-    /**
-     * Get the contents of the IPFS object identified by the given CID or URI, and parse it as JSON, returning the parsed object.
-     *
-     * @param {string} imdDir - NFT collection image directory
-     * @param {string} mdDir - NFT collection metadata JSON directory
-     * @returns {Promise<string>} - IPFS CID string or `ipfs://<cid>` style URI
-     */
-    async makeBatchNFTMetadata(imgDir, mdDir) {
-        const imgCID = await all(ipfs.addAll(ipfsFormatFileArray(imgDir)));
-        parseCollectionMetadata(imgCID, mdDir);
-        const mdURI = await all(ipfs.addAll(ipfsFormatFileArray(mdDir)));
-        return mdURI;
-    }
-
     async parseMetadata(file, cid, metadata) {
         const { externalUrl, sellerFee, feeRecipient } = metadata;
 
@@ -576,16 +603,6 @@ class Minty {
         for (const file of files) {
             parseMetadata(`${dir}/${file}`, cid, metadata);
         }
-    }
-
-    async ipfsFormatFileArray(dir) {
-        const files = fs.readdirSync(dir);
-        return files.map((f) => {
-            return {
-                path: f.name,
-                content: f,
-            };
-        });
     }
 
     //////////////////////////////////////////////

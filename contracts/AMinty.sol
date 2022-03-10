@@ -19,11 +19,9 @@ contract AMinty is ERC721A {
     ) ERC721A(_name, _symbol) {
         baseTokenURI = _baseTokenURI;
         contractURI = _contractURI;
-        
     }
 
     function mint(uint256 quantity) external payable {
-        // _safeMint's second argument now takes in a quantity, not a tokenId.
         _safeMint(msg.sender, quantity);
     }
 
