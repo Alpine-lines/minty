@@ -101,13 +101,17 @@ async function deployContract(options) {
     const Contract = await hardhat.ethers.getContractFactory(contract);
     let contractInstance;
 
+    let admins = [
+        "0x976ea74026e726554db657fa54763abd0c3a0aa9",
+        "0x14dc79964da2c08b23698b3d3cc7ca32193d9955",
+    ];
+
     if (contract === "Minty") {
         contractInstance = await Contract.deploy(name, symbol, metadataURI);
     } else if (contract === "PreMinty" || contract === "OpenMinty") {
         contractInstance = await Contract.deploy(
             name,
             symbol,
-            minters,
             admins,
             metadataURI,
             11000,
@@ -115,12 +119,12 @@ async function deployContract(options) {
         );
     }
 
-    await minty.deployed();
+    await contractInstance.deployed();
     console.log(
-        `deployed contract for token ${name} (${symbol}) to ${minty.address} (network: ${network}, metadata: ${metadataURI})`
+        `deployed contract for token ${name} (${symbol}) to ${contractInstance.address} (network: ${network}, metadata: ${metadataURI})`
     );
 
-    return deploymentInfo(hardhat, minty, contract, metadataURI);
+    return deploymentInfo(hardhat, contractInstance, contract, metadataURI);
 }
 
 function makeContractMetadata(assetURI, options) {
@@ -199,7 +203,7 @@ async function saveDeploymentInfo(
         info.contract.metadataURI = metadataURI;
     }
     const content = JSON.stringify(info, null, 2);
-    await fs.writeFile(filename, content, { encoding: "utf-8" });
+    fs.writeFileSync(filename, content, { encoding: "utf-8" });
 
     return true;
 }

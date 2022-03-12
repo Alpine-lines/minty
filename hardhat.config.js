@@ -222,6 +222,7 @@ module.exports = {
         matic: {
             url: "https://polygon-rpc.com/",
             accounts: [secrets.privateKey],
+            gasPrice: 8000000000, // default is 'auto' which breaks chains without the london hardfork
             // gas: 3950000,
             // gasPrice: 8000000000,
             // gasMultiplier: 1.1,

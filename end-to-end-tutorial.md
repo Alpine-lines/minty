@@ -1,7 +1,7 @@
 ---
 title: End-to-end tutorial
 description: Go from nothing, to having an NFT pinned on Pinata in just a few minutes.
-date: 2021-03-17
+date: 2022-03-12
 ---
 
 # End-to-end tutorial
@@ -21,26 +21,29 @@ Installation of Minty is fairly simple. Just download the GitHub repository, ins
     cd minty
     ```
 
-1. Install the NPM dependencies:
+2. Install the NPM dependencies:
 
     ```shell
     yarn install
     ```
 
-1. Add the `minty` command to your `$PATH`. This makes it easier to run Minty from anywhere on your computer:
+3. Add the `minty` command to your `$PATH`. This makes it easier to run Minty from anywhere on your computer:
 
     ```shell
     yarn link
     ```
 
-1. Run the `start-local-environment.sh` script to start the local Ethereum testnet and IPFS daemon:
+4. Run the `start-local-environment.sh` script to start the local Ethereum testnet and IPFS daemon:
 
     ```shell
-    ./start-local-environment.sh
-
-    > Compiling smart contract
-    > Compiling 16 files with 0.7.3
-    > ...
+      ./start-local-environment.sh
+      Compiling smart contract
+      Nothing to compile
+      Running IPFS and development blockchain
+      [eth] Started HTTP and WebSocket JSON-RPC server at http://127.0.0.1:8545/
+      ...
+      [ipfs] Daemon is ready
+      ...
     ```
 
     This command continues to run. All further commands must be entered in another terminal window.
@@ -51,18 +54,26 @@ Before running any of the other `minty` commands, you'll need to deploy an insta
 smart contract:
 
 ```shell
-minty deploy --contract "OpenMinty" --name "MintIt" --description "It's Minty" --image "~/pictures/profile.jpg"
-
-> deploying contract for token Julep (JLP) to network "localhost"...
-> deployed contract for token Julep (JLP) to 0x5FbDB2315678afecb367f032d93F642f64180aa3 (network: localhost)
-> Writing deployment info to minty-deployment.json
+ minty deploy --contract PreMinty
+? Enter a name for your new NFT contract:
+? Enter a description for your new NFT contract:
+? Enter a token symbol for your new NFT contract:
+? Enter an image file path for your new NFT contract:
+? Enter an external url for your new NFT contract:
+? Enter an Opensea seller fee, in basis points, for your new NFT contract:
+? Enter a fee recipient wallet address for your new NFT contract:
+deploying contract for token  () to network "localhost". You can now view contract metadata at http://localhost:8080/ipfs/bafybeigckklrdakkvf2qf3amzobf363yv3k2r636o4qejvqpnxgstqga44/metadata.json ...
+deployed contract for token  () to 0x59b670e9fA9D0A427751Af201D676719a970857b (network: localhost, metadata: ipfs://bafybeigckklrdakkvf2qf3amzobf363yv3k2r636o4qejvqpnxgstqga44/metadata.json)
+Writing deployment info to minty-deployment.json
 ```
 
 This deploys to the network configured in [`hardhat.config.js`](./hardhat.config.js), which is set to the `localhost` network by default. If you get an error about not being able to reach the network, make sure to run the local development network with `./start-local-environment.sh`.
 
 When the contract is deployed, the address and other information about the deployment is written to `minty-deployment.json`. This file must be present for subsequent commands to work.
 
-To deploy to an ethereum testnet, see the [Hardhat configuration docs](https://hardhat.org/config/) to learn how to configure a JSON-RPC node. Once you've added a new network to the Hardhat config, you can use it by setting the `HARDHAT_NETWORK` environment variable to the name of the new network when you run `minty` commands. Alternatively, you can change the `defaultNetwork` in `hardhat.config.js` to always prefer the new network.
+### Deploying to other networks
+
+To deploy to another network, see the [Hardhat configuration docs](https://hardhat.org/config/) to learn how to configure a JSON-RPC node. Once you've added a new network to the Hardhat config, you can use it by setting the `HARDHAT_NETWORK` environment variable to the name of the new network when you run `minty` commands. Alternatively, you can change the `defaultNetwork` in `hardhat.config.js` to always prefer the new network.
 
 Deploying this contract to the Ethereum mainnet is a bad idea since the contract itself lacks any access control. See the [Open Zeppelin article](https://docs.openzeppelin.com/contracts/3.x/access-control) about what access control is, and why it's important to have.
 
@@ -159,9 +170,41 @@ Now that we've got our ticket, we can mint it.
     > }
     ```
 
-1. That it!
-
 Great! You've created your NFT, but it's only available to other people as long as you have you IPFS node running! If you shutdown your computer or you lose your internet connection, then no one else will be able to view your NFT! To get around this issue you should pin it to a pinning service.
+
+## Batch Mint NFTs
+
+Now that you can mint a single NFT, let's learn how to batch mint!
+
+1. Let's get started by preparing an image directory for our NFTs. Create a directory called images and add 3 image files to it. Rename them 1, 2, and 3.
+
+```shell
+   mkdir img-to-the-moon \
+   mv ~/Downloads/<img1.ext> img-to-the-moon/1.ext \
+   mv ~/Downloads/<img1.ext> img-to-the-moon/2.ext \
+   mv ~/Downloads/<img1.ext> img-to-the-moon/3.ext
+```
+
+2. Now that our images are ready, let's move forward with creating a directory to house the metadata JSON files and get some files ready.
+
+```shell
+   mkdir md-to-the-moon \
+   touch md-to-the-moon/1.json \
+   touch md-to-the-moon/2.json \
+   touch md-to-the-moon/3.json
+```
+
+3. Next open each file and enter the some JSON from the example above, changing the number 1 to the appropriate number for each file.
+
+4. Finally, use the minty batchMint command with the args --metadataDir & --imageDir to deploy all of the tokens described in your metadata directory.
+
+```shell
+   minty batchMint --imageDir ~/img-to-the-moon --metadataDir ~/md-to-the-moon
+
+   > 🌿 Minted new NFTs:
+   > Token IDs:             1, 2, 3
+   > Failed to Mint Files:  n/a
+```
 
 ## Pin your NFT
 
@@ -170,7 +213,7 @@ To make the data highly available without needing to run a local IPFS daemon 24/
 ### Sign up to Pinata
 
 1. Head over to [pinata.cloud](https://pinata.cloud/).
-1. Click **Sign up** and use your email address to create an account.
+2. Click **Sign up** and use your email address to create an account.
 
 Pinata gives each user 1GB of free storage space, which is plenty for storing a few NFTs.
 
@@ -179,12 +222,12 @@ Pinata gives each user 1GB of free storage space, which is plenty for storing a 
 Your API key allows Minty to interact with your Pinata account automatically:
 
 1. Log into Pinata and select **API keys** from the sidebar menu.
-1. Click **New Key**.
-1. Expand the **Pinning Services API** dropdown and select all the options under **Pins**:
+2. Click **New Key**.
+3. Expand the **Pinning Services API** dropdown and select all the options under **Pins**:
 
     ![The permissions options available to API keys in Pinata.](./images/pinata-api-key-permissions.png)
 
-1. Pinata will give you an _API key_, and _API secret_, and a _JWT_:
+4. Pinata will give you an _API key_, and _API secret_, and a _JWT_:
 
     ```
     API Key: 43537d17e88805007086
@@ -193,5 +236,3 @@ Your API key allows Minty to interact with your Pinata account automatically:
     ```
 
     We just need the `API Key` and `API Secret`. You can ignore the `JWT` for now.
-
-1.

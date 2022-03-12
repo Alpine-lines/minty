@@ -16,17 +16,15 @@ deploy an instance of the Minty NFT contract
 
 Options:
   -o, --output <deploy-file-path>  Path to write deployment info to (default: "minty-deployment.json")
-  -c, --contract <contract>        Contract template to deploy. Must be either Minty, OpenMinty, or
-                                   PreMinty
+  -f, --file <file>                Collection metadata file for contract deployment.
+  -c, --contract <contract>        Contract template to deploy. Must be either Minty, OpenMinty, or PreMinty
   -n, --name <name>                The name of the token contract
   -d, --description <desc>         A description of the token contract
   -i, --image <image>              An image file path for the token contract
   -s, --symbol <symbol>            A short symbol for the tokens in this contract
   -e, --exUrl <exUrl>              The external url of the collection website
-  -s, --sellerFee <fee>            The seller fee, in basis points, to be charged to opensea sellers and
-                                   credited to the listed fee recipient
-  -r, --recipient <recipient>      The fee recipient where seller fees will be sent following sales on
-                                   opensea.
+  -s, --sellerFee <fee>            The seller fee, in basis points, to be charged to opensea sellers and credited to the listed fee recipient
+  -r, --recipient <recipient>      The fee recipient where seller fees will be sent following sales on opensea.
   -m, --metadata <metadata>        The token contracts metadata in JSON format
   -f, --file <file>                Path to the JSON file containing the token contracts metadata.
   -h, --help                       display help for command
@@ -49,8 +47,7 @@ Options:
   -b, --background <bg>        Opensea NFT hexidecimal background color
   -a, --animation <animation>  URL where NFT animation can be found
   -v, --video <video>          URL where video can be found, i.e. https://youtube.com/<uri>
-  -o, --owner <address>        The ethereum address that should own the NFT.If not provided, defaults to
-                               the first signing address.
+  -o, --owner <address>        The ethereum address that should own the NFT.If not provided, defaults to the first signing address.
   -h, --help                   display help for command
 ```
 
@@ -61,7 +58,7 @@ To install and run Minty, you must have NPM installed. Windows is not currently 
 1. Clone this repository and move into the `minty` directory:
 
     ```shell
-    git clone https://github.com/yusefnapora/minty
+    git clone https://github.com/Alpine-lines/minty
     cd minty
     ```
 
