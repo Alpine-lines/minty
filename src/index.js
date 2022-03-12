@@ -72,18 +72,24 @@ async function main() {
         )
         .option(
             "-i, --imageDir <imageDir>",
-            "Image directory path where collection images are held"
+            "Path of the directory where collection images are held"
         )
         .option(
             "-m, --metadataDir <metadataDir>",
-            "Metadata directory path where metada JSON files are held"
+            "Path of the directory where metada JSON files are held"
         )
         .option(
             "-c, --imgCid <imgCid>",
-            "Address where new tokens will be sent."
+            "IPFS CID where images are hosted, use when preemptively uploading images to IPFS."
         )
-        .option("-d, --mdCid <mdCid>", "Address where new tokens will be sent.")
-        .option("-o, --owner <owner>", "Address where new tokens will be sent.")
+        .option(
+            "-d, --mdCid <mdCid>",
+            "IPFS CID where images are hosted, use when preemptively uploading images to IPFS."
+        )
+        .option(
+            "-o, --owner <owner>",
+            "Address to receive newly minted tokens."
+        )
         .action(batchMint);
 
     program

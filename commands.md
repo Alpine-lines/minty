@@ -66,11 +66,11 @@ Usage: minty batchMint [options]
 bulk mint n NFTs and upload n images and metadata.json objects to IPFS w/ optional pinning service
 
 Options:
-  -i, --imageDir <imageDir>        Image directory path where collection images are held
-  -m, --metadataDir <metadataDir>  Metadata directory path where metada JSON files are held
-  -c, --imgCid <imgCid>            Address where new tokens will be sent.
-  -d, --mdCid <mdCid>              Address where new tokens will be sent.
-  -o, --owner <owner>              Address where new tokens will be sent.
+  -i, --imageDir <imageDir>        Path of the directory where collection images are held
+  -m, --metadataDir <metadataDir>  Path of the directory where metada JSON files are held
+  -c, --imgCid <imgCid>            IPFS CID where images are hosted, use when preemptively uploading images to IPFS.
+  -d, --mdCid <mdCid>              IPFS CID where images are hosted, use when preemptively uploading images to IPFS.
+  -o, --owner <owner>              Address to receive newly minted tokens.
   -h, --help                       display help for command
 ```
 
